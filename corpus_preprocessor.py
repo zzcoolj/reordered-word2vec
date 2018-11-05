@@ -30,7 +30,7 @@ params = {
 
 def train_models(corpus_file, output_path):
     gs_model = Word2Vec(LineSentence(corpus_file), **params)
-    gs_model.save_word2vec_format(output_path)
+    gs_model.wv.save_word2vec_format(output_path)
 
 
 start = time.time()
