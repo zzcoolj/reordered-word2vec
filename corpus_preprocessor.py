@@ -1,5 +1,8 @@
 # https://markroxor.github.io/gensim/static/notebooks/Word2Vec_FastText_Comparison.html
 
+from gensim.models import Word2Vec
+from gensim.models.word2vec import Text8Corpus
+
 lr = 0.05
 dim = 100
 ws = 5
@@ -8,9 +11,6 @@ minCount = 5
 neg = 5
 loss = 'ns'
 t = 1e-4
-
-from gensim.models import Word2Vec
-from gensim.models.word2vec import Text8Corpus
 
 # Same values as used for fastText training above
 params = {
@@ -26,6 +26,6 @@ params = {
 }
 
 
-def train_models(corpus_file, output_name):
+def train_models(corpus_file, output_path):
     gs_model = Word2Vec(Text8Corpus(corpus_file), **params)
-    gs_model.save_word2vec_format()
+    gs_model.save_word2vec_format(output_path)
