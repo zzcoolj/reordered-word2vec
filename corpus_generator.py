@@ -34,9 +34,10 @@ class WikiSentences(object):
                         yield line.strip()
 
 
-with open('input/test.txt', 'w', encoding='utf-8') as f:
+with open('input/enwiki-1G.txt', 'w', encoding='utf-8') as f:
     count = 0
-    for sent in WikiSentences(dirname='/vol/corpusiles/open/Wikipedia-Dumps/en/20170420/prep/', units=['AA']):
+    for sent in WikiSentences(dirname='/vol/corpusiles/open/Wikipedia-Dumps/en/20170420/prep/',
+                              units=['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ']):
         f.write(sent+'\n')
         count += 1
     print(count)
