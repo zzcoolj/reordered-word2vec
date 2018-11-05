@@ -31,9 +31,12 @@ class WikiSentences(object):
             for fname in os.listdir(sub_folder_path):
                 if not fname.startswith('.'):
                     for line in open(os.path.join(sub_folder_path, fname), 'r', encoding='utf-8'):
-                        yield line.strip().split()
+                        yield line.strip()
 
 
 with open('input/test.txt', 'w') as f:
-    # f.writelines(WikiSentences(dirname='/vol/corpusiles/open/Wikipedia-Dumps/en/20170420/prep/', units=['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ']))
-    f.writelines(WikiSentences(dirname='/vol/corpusiles/open/Wikipedia-Dumps/en/20170420/prep/', units=['AA']))
+    count = 0
+    for sent in WikiSentences(dirname='/vol/corpusiles/open/Wikipedia-Dumps/en/20170420/prep/', units=['AA']):
+        f.write(sent+'\n')
+        count += 1
+    print(count)
