@@ -1,10 +1,12 @@
 # https://markroxor.github.io/gensim/static/notebooks/Word2Vec_FastText_Comparison.html
 
 from gensim.models import Word2Vec
-from gensim.models.word2vec import Text8Corpus
+from gensim.models.word2vec import LineSentence
+
+import time
 
 lr = 0.05
-dim = 100
+dim = 200
 ws = 5
 epoch = 5
 minCount = 5
@@ -20,12 +22,18 @@ params = {
     'iter': epoch,
     'min_count': minCount,
     'sample': t,
-    'sg': 1,
-    'hs': 0,
+    'sg': 1,  # 1 for skip-gram
+    'hs': 0,  # If 0, and negative is non-zero, negative sampling will be used.
     'negative': neg
 }
 
 
 def train_models(corpus_file, output_path):
-    gs_model = Word2Vec(Text8Corpus(corpus_file), **params)
+    gs_model = Word2Vec(LineSentence(corpus_file), **params)
     gs_model.save_word2vec_format(output_path)
+
+
+start = time.time()
+train_models('input/enwiki-101M.txt', 'output/test')
+end = time.time()
+print('time (seconds):', end-start)
