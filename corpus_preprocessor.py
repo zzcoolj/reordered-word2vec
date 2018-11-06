@@ -12,7 +12,8 @@ lr = 0.05
 dim = 200
 ws = 5
 epoch = 5
-minCount = 5
+# minCount = 5
+max_vocab_size = 50000
 neg = 5
 loss = 'ns'
 t = 1e-4
@@ -23,7 +24,8 @@ params = {
     'size': dim,
     'window': ws,
     'iter': epoch,
-    'min_count': minCount,
+    # 'min_count': minCount,
+    'max_vocab_size': max_vocab_size,
     'sample': t,
     'sg': 1,  # 1 for skip-gram
     'hs': 0,  # If 0, and negative is non-zero, negative sampling will be used.
@@ -47,13 +49,13 @@ def evaluate(vec):
     return results2 + results3 + results1
 
 
-# start = time.time()
-# # train_models('input/enwiki-101M.txt', 'output/test')
-# train_models('input/enwiki-1G.txt', 'output/test1G')
-# end = time.time()
-# print('time (seconds):', end-start)
+start = time.time()
+# train_models('input/enwiki-101M.txt', 'output/test')
+train_models('input/enwiki-1G.txt', 'output/test1G-vocab50000')
+end = time.time()
+print('time (seconds):', end-start)
 
 
-vec = KeyedVectors.load_word2vec_format('output/test1G').wv
-print(evaluate(vec))
+# vec = KeyedVectors.load_word2vec_format('output/test1G').wv
+# print(evaluate(vec))
 
