@@ -4,6 +4,9 @@ from gensim.models import Word2Vec
 from gensim.models.word2vec import LineSentence
 
 import time
+import sys
+sys.path.append('../word_embeddings_evaluator/')
+from evaluator import Evaluator
 
 lr = 0.05
 dim = 200
@@ -33,8 +36,24 @@ def train_models(corpus_file, output_path):
     gs_model.wv.save_word2vec_format(output_path)
 
 
-start = time.time()
-# train_models('input/enwiki-101M.txt', 'output/test')
-train_models('input/enwiki-1G.txt', 'output/test1G')
-end = time.time()
-print('time (seconds):', end-start)
+def evaluate(vec):
+    # evaluation results
+    labels1, results1 = Evaluator.evaluation_questions_words(vec)
+    # self.print_lables_results(labels1, results1)
+    labels2, results2 = Evaluator.evaluation_word_pairs(vec, evaluation_data_path='~/Code/word_embeddings_evaluator/data/wordsim353/combined.tab')
+    # eval.print_lables_results(labels2, results2)
+    labels3, results3 = Evaluator.evaluation_word_pairs(vec, evaluation_data_path='~/Code/word_embeddings_evaluator/data/simlex999.txt')
+    # eval.print_lables_results(labels3, results3)
+    return results2 + results3 + results1
+
+
+# start = time.time()
+# # train_models('input/enwiki-101M.txt', 'output/test')
+# train_models('input/enwiki-1G.txt', 'output/test1G')
+# end = time.time()
+# print('time (seconds):', end-start)
+
+
+vec = Word2Vec.load_word2vec_format('output/test1G')
+print(evaluate(vec))
+
