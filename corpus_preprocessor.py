@@ -34,6 +34,7 @@ def train_models(corpus_file, output_path):
 
 
 start = time.time()
-train_models('input/enwiki-101M.txt', 'output/test')
+# train_models('input/enwiki-101M.txt', 'output/test')
+train_models('input/enwiki-1G.txt', 'output/test1G')
 end = time.time()
 print('time (seconds):', end-start)
