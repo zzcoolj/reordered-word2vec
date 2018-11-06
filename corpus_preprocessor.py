@@ -1,6 +1,6 @@
 # https://markroxor.github.io/gensim/static/notebooks/Word2Vec_FastText_Comparison.html
 
-from gensim.models import Word2Vec
+from gensim.models import Word2Vec, KeyedVectors
 from gensim.models.word2vec import LineSentence
 
 import time
@@ -54,6 +54,6 @@ def evaluate(vec):
 # print('time (seconds):', end-start)
 
 
-vec = Word2Vec.load_word2vec_format('output/test1G')
+vec = KeyedVectors.load_word2vec_format('output/test1G').wv
 print(evaluate(vec))
 
