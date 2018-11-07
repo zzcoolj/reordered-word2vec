@@ -13,7 +13,7 @@ dim = 200
 ws = 5
 epoch = 5
 # minCount = 5
-max_vocab_size = 50000
+max_vocab_size = 20000
 neg = 5
 loss = 'ns'
 t = 1e-4
@@ -51,7 +51,7 @@ def evaluate(vec):
 
 start = time.time()
 # train_models('input/enwiki-101M.txt', 'output/test')
-train_models('input/enwiki-1G.txt', 'output/test1G-vocab50000')
+train_models('input/enwiki-1G.txt', 'output/test1G-vocab20000')
 end = time.time()
 print('time (seconds):', end-start)
 
