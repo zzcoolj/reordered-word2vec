@@ -346,9 +346,9 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
     work = <REAL_t *>np.PyArray_DATA(_work)
 
     # prepare C structures so we can go "full C" and release the Python GIL
-    vlookup = model.wv.vocab
+    vlookup = model.wv.vocab  # vocab's type is {}
     sentence_idx[0] = 0  # indices of the first sentence always start at 0
-    restricted_vlookup = [] # TODO get restricted tokens list
+    restricted_vlookup = {} # TODO get restricted tokens list
     restricted_sentence_idx[0] = 0  # [modified]
     for sent in sentences:
         if not sent:
@@ -413,7 +413,7 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
             # idx_end = sentence_idx[sent_idx + 1]  # [modified]
             idx_end = restricted_sentence_idx[sent_idx + 1]  # [modified]
             # for i in range(idx_start, idx_end):  # [modified]
-            for i in restricted_effective_words_positions[idx_start: idx_end]:  # [modified]
+            for i in restricted_effective_words_positions[idx_start: idx_end]:  # [modified] i 作为target word，其选择收到了限制，不再是从左到右。而j作为context word，其选择依然按照indexes中部分位置从左到右。
                 j = i - window + reduced_windows[i]
                 if j < idx_start:
                     j = idx_start
