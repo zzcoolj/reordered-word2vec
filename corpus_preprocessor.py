@@ -1,6 +1,7 @@
 # https://markroxor.github.io/gensim/static/notebooks/Word2Vec_FastText_Comparison.html
 
-from gensim.models import Word2Vec, KeyedVectors
+from word2vec_modified import Word2Vec
+from gensim.models import KeyedVectors
 from gensim.models.word2vec import LineSentence
 
 import time
