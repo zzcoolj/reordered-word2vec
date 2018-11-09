@@ -144,32 +144,33 @@ except ImportError:
     FAST_VERSION = -1
     MAX_WORDS_IN_BATCH = 10000
 
-    def train_batch_sg(model, sentences, alpha, work=None, compute_loss=False):
-        """
-        Update skip-gram model by training on a sequence of sentences.
-        Each sentence is a list of string tokens, which are looked up in the model's
-        vocab dictionary. Called internally from `Word2Vec.train()`.
-        This is the non-optimized, Python version. If you have cython installed, gensim
-        will use the optimized version from word2vec_inner instead.
-        """
-        result = 0
-        for sentence in sentences:
-            word_vocabs = [model.wv.vocab[w] for w in sentence if w in model.wv.vocab and
-                           model.wv.vocab[w].sample_int > model.random.rand() * 2 ** 32]
-            for pos, word in enumerate(word_vocabs):
-                reduced_window = model.random.randint(model.window)  # `b` in the original word2vec code
-
-                # now go over all words from the (reduced) window, predicting each one in turn
-                start = max(0, pos - model.window + reduced_window)
-                for pos2, word2 in enumerate(word_vocabs[start:(pos + model.window + 1 - reduced_window)], start):
-                    # don't train on the `word` itself
-                    if pos2 != pos:
-                        train_sg_pair(
-                            model, model.wv.index2word[word.index], word2.index, alpha, compute_loss=compute_loss
-                        )
-
-            result += len(word_vocabs)
-        return result
+    # # [modified]
+    # def train_batch_sg(model, sentences, alpha, work=None, compute_loss=False):
+    #     """
+    #     Update skip-gram model by training on a sequence of sentences.
+    #     Each sentence is a list of string tokens, which are looked up in the model's
+    #     vocab dictionary. Called internally from `Word2Vec.train()`.
+    #     This is the non-optimized, Python version. If you have cython installed, gensim
+    #     will use the optimized version from word2vec_inner instead.
+    #     """
+    #     result = 0
+    #     for sentence in sentences:
+    #         word_vocabs = [model.wv.vocab[w] for w in sentence if w in model.wv.vocab and
+    #                        model.wv.vocab[w].sample_int > model.random.rand() * 2 ** 32]
+    #         for pos, word in enumerate(word_vocabs):
+    #             reduced_window = model.random.randint(model.window)  # `b` in the original word2vec code
+    #
+    #             # now go over all words from the (reduced) window, predicting each one in turn
+    #             start = max(0, pos - model.window + reduced_window)
+    #             for pos2, word2 in enumerate(word_vocabs[start:(pos + model.window + 1 - reduced_window)], start):
+    #                 # don't train on the `word` itself
+    #                 if pos2 != pos:
+    #                     train_sg_pair(
+    #                         model, model.wv.index2word[word.index], word2.index, alpha, compute_loss=compute_loss
+    #                     )
+    #
+    #         result += len(word_vocabs)
+    #     return result
 
     def train_batch_cbow(model, sentences, alpha, work=None, neu1=None, compute_loss=False):
         """
@@ -425,7 +426,8 @@ class Word2Vec(BaseWordEmbeddingsModel):
     def __init__(self, sentences=None, size=100, alpha=0.025, window=5, min_count=5,
                  max_vocab_size=None, sample=1e-3, seed=1, workers=3, min_alpha=0.0001,
                  sg=0, hs=0, negative=5, cbow_mean=1, hashfxn=hash, iter=5, null_word=0,
-                 trim_rule=None, sorted_vocab=1, batch_words=MAX_WORDS_IN_BATCH, compute_loss=False, callbacks=()):
+                 trim_rule=None, sorted_vocab=1, batch_words=MAX_WORDS_IN_BATCH, compute_loss=False, callbacks=(),
+                 restricted_vocab=None):
         """
         Initialize the model from an iterable of `sentences`. Each sentence is a
         list of words (unicode strings) that will be used for training.
@@ -511,6 +513,7 @@ class Word2Vec(BaseWordEmbeddingsModel):
 
         """
 
+        self.restricted_vocab = restricted_vocab  # [modified]
         self.callbacks = callbacks
         self.load = call_on_class_only
 

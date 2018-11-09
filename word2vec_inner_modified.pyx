@@ -348,7 +348,7 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
     # prepare C structures so we can go "full C" and release the Python GIL
     vlookup = model.wv.vocab  # vocab's type is {}
     sentence_idx[0] = 0  # indices of the first sentence always start at 0
-    restricted_vlookup = {} # TODO get restricted tokens list
+    restricted_vlookup = model.restricted_vocab # [modified]
     restricted_sentence_idx[0] = 0  # [modified]
     for sent in sentences:
         if not sent:

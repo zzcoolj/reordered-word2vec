@@ -4,3 +4,6 @@ input/*
 !input/.gitkeep
 output/*
 !output/.gitkeep
+build/
+word2vec_inner_modified.c
+*.so

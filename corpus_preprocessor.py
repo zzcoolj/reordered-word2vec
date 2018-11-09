@@ -29,7 +29,8 @@ params = {
     'sample': t,
     'sg': 1,  # 1 for skip-gram
     'hs': 0,  # If 0, and negative is non-zero, negative sampling will be used.
-    'negative': neg
+    'negative': neg,
+    'restricted_vocab': ['hello', 'world']
 }
 
 
@@ -49,15 +50,15 @@ def evaluate(vec):
     return results2 + results3 + results1
 
 
-# start = time.time()
-# # train_models('input/enwiki-101M.txt', 'output/test')
+start = time.time()
+train_models('input/enwiki-101M.txt', 'output/test101M-vocab20000-restricted')
 # train_models('input/enwiki-1G.txt', 'output/test1G-vocab20000')
-# end = time.time()
-# print('time (seconds):', end-start)
+end = time.time()
+print('time (seconds):', end-start)
 
 
-vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000').wv
-print(evaluate(vec))
-vec = KeyedVectors.load_word2vec_format('output/test1G-vocab20000').wv
-print(evaluate(vec))
+# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000').wv
+# print(evaluate(vec))
+# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab20000').wv
+# print(evaluate(vec))
 
