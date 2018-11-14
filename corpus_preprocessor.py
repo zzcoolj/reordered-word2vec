@@ -27,6 +27,7 @@ max_vocab_size = 50000
 neg = 5
 loss = 'ns'
 t = 1e-4
+workers = 15  # 3 by default
 
 restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
 
@@ -42,6 +43,7 @@ params = {
     'sg': 1,  # 1 for skip-gram
     'hs': 0,  # If 0, and negative is non-zero, negative sampling will be used.
     'negative': neg,
+    'workers': workers,
     'restricted_vocab': restricted_vocab  # [modified] ATTENTION: It must be a dictionary not a list!
 }
 
@@ -62,18 +64,18 @@ def evaluate(vec):
     return results2 + results3 + results1
 
 
-# start = time.time()
-# # train_models('input/enwiki-101M.txt', 'output/test101M-vocab20000-restricted')
-# train_models('input/enwiki-1G.txt', 'output/test1G-vocab50000-analogy&353&999')
-# end = time.time()
-# print('time (seconds):', end-start)
+start = time.time()
+# train_models('input/enwiki-101M.txt', 'output/test101M-vocab20000-restricted')
+train_models('input/enwiki-1G.txt', 'output/test1G-vocab50000-analogy&353&999-15workers')
+end = time.time()
+print('time (seconds):', end-start)
 
 
-vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-353').wv
-print(evaluate(vec))
-vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-999').wv
-print(evaluate(vec))
-vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-analogy').wv
-print(evaluate(vec))
-vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-analogy&353&999').wv
-print(evaluate(vec))
+# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-353').wv
+# print(evaluate(vec))
+# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-999').wv
+# print(evaluate(vec))
+# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-analogy').wv
+# print(evaluate(vec))
+# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-analogy&353&999').wv
+# print(evaluate(vec))
