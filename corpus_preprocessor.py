@@ -64,11 +64,11 @@ def evaluate(vec):
     return results2 + results3 + results1
 
 
-start = time.time()
-# train_models('input/enwiki-101M.txt', 'output/test101M-vocab20000-restricted')
-train_models('input/enwiki-1G.txt', 'output/test1G-vocab50000-analogy&353&999-15workers')
-end = time.time()
-print('time (seconds):', end-start)
+# start = time.time()
+# # train_models('input/enwiki-101M.txt', 'output/test101M-vocab20000-restricted')
+# train_models('input/enwiki-1G.txt', 'output/test1G-vocab50000-analogy&353&999-15workers')
+# end = time.time()
+# print('time (seconds):', end-start)
 
 
 # vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-353').wv
@@ -77,5 +77,5 @@ print('time (seconds):', end-start)
 # print(evaluate(vec))
 # vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-analogy').wv
 # print(evaluate(vec))
-# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-analogy&353&999').wv
-# print(evaluate(vec))
+vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-analogy&353&999-15workers').wv
+print(evaluate(vec))
