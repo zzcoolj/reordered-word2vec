@@ -309,8 +309,9 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
 
     cdef int codelens[MAX_SENTENCE_LEN]
     cdef np.uint32_t indexes[MAX_SENTENCE_LEN]
-    cdef np.uint32_t restricted_effective_words_positions[MAX_SENTENCE_LEN]  # [modified]  length <= MAX_SENTENCE_LEN
     cdef np.uint32_t reduced_windows[MAX_SENTENCE_LEN]
+    # cdef np.uint32_t restricted_effective_words_positions[MAX_SENTENCE_LEN]  # [modified]  length <= MAX_SENTENCE_LEN  #TODO
+    cdef int restricted_effective_words_positions[MAX_SENTENCE_LEN]  # [modified]  length <= MAX_SENTENCE_LEN  #TODO
     cdef int sentence_idx[MAX_SENTENCE_LEN + 1]
     cdef int restricted_sentence_idx[MAX_SENTENCE_LEN + 1]  # [modified]
     cdef int window = model.window
@@ -385,14 +386,16 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
         if effective_words == MAX_SENTENCE_LEN:
             break  # TODO: log warning, tally overflow?
 
-        if effective_words != 0:
+        if effective_words != 0 and effective_sentences==3:
             print(effective_sentences)
-            print(sentence_idx[effective_sentences-1])
-            print(sentence_idx[effective_sentences])
-            print(sentence_idx[effective_sentences+1])
-            print(restricted_sentence_idx[effective_sentences-1])
-            print(restricted_sentence_idx[effective_sentences])
-            print(restricted_sentence_idx[effective_sentences+1])
+            print(sentence_idx[0])
+            print(sentence_idx[1])
+            print(sentence_idx[2])
+            print(sentence_idx[3])
+            print(restricted_sentence_idx[0])
+            print(restricted_sentence_idx[1])
+            print(restricted_sentence_idx[2])
+            print(restricted_sentence_idx[3])
             print(indexes)
             print(restricted_effective_words_positions)
             print('print finished')
