@@ -29,7 +29,7 @@ loss = 'ns'
 t = 1e-4
 workers = 3  # 3 by default
 
-restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')
+restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/999.txt')
 
 # Same values as used for fastText training above
 params = {
@@ -66,12 +66,12 @@ def evaluate(vec):
 
 start = time.time()
 # train_models('input/enwiki-101M.txt', 'output/test101M-vocab20000-restricted')
-train_models('input/enwiki-1G.txt', 'output/test1G-vocab50000-353')
+train_models('input/enwiki-1G.txt', 'output/test1G-vocab50000-999')
 end = time.time()
 print('time (seconds):', end-start)
 
 
-vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-353').wv
+vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-999').wv
 print(evaluate(vec))
 # vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-999').wv
 # print(evaluate(vec))
