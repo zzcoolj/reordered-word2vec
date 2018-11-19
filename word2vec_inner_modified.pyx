@@ -355,12 +355,12 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
         if not sent:
             continue  # ignore empty sentences; leave effective_sentences unchanged
         for token in sent:
-            print(token)
             word = vlookup[token] if token in vlookup else None
             if word is None:
                 continue  # leaving `effective_words` unchanged = shortening the sentence = expanding the window
             if sample and word.sample_int < random_int32(&next_random):
                 continue
+            print(token)
             indexes[effective_words] = word.index
             # TODO in or NOT in
             if token in restricted_vlookup:  # [modified]
