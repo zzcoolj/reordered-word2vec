@@ -114,7 +114,8 @@ import warnings
 
 from gensim.utils import keep_vocab_item, call_on_class_only
 from gensim.models.keyedvectors import Vocab, Word2VecKeyedVectors
-from gensim.models.base_any2vec import BaseWordEmbeddingsModel
+# from gensim.models.base_any2vec import BaseWordEmbeddingsModel  # [modified]
+from base_any2vec_modified import BaseWordEmbeddingsModel  # [modified]
 
 try:
     from queue import Queue, Empty
