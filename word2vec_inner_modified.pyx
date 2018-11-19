@@ -390,6 +390,7 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
         print(restricted_sentence_idx[2])
         print(indexes)
         print(restricted_effective_words_positions)
+        print('print finished')
         exit()
 
     # precompute "reduced window" offsets in a single randint() call

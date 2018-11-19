@@ -27,7 +27,7 @@ max_vocab_size = 50000
 neg = 5
 loss = 'ns'
 t = 1e-4
-workers = 10  # 3 by default
+workers = 1  # 3 by default
 
 restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')
 
