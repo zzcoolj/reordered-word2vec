@@ -27,7 +27,7 @@ max_vocab_size = 50000
 neg = 5
 loss = 'ns'
 t = 1e-4
-workers = 1  # 3 by default
+workers = 3  # 3 by default
 
 restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')
 
@@ -66,18 +66,18 @@ def evaluate(vec):
 
 start = time.time()
 # train_models('input/enwiki-101M.txt', 'output/test101M-vocab20000-restricted')
-train_models('input/enwiki-1G.txt', 'output/test1G-vocab50000-noTrain')
+train_models('input/enwiki-1G.txt', 'output/test1G-vocab50000-353')
 end = time.time()
 print('time (seconds):', end-start)
 
 
-# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-353').wv
-# print(evaluate(vec))
+vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-353').wv
+print(evaluate(vec))
 # vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-999').wv
 # print(evaluate(vec))
 # vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-analogy').wv
 # print(evaluate(vec))
-vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-noTrain').wv
-print(evaluate(vec))
+# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-noTrain').wv
+# print(evaluate(vec))
 
 # vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-no353').wv

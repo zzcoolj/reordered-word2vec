@@ -312,7 +312,7 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
     cdef np.uint32_t reduced_windows[MAX_SENTENCE_LEN]
     # cdef np.uint32_t restricted_effective_words_positions[MAX_SENTENCE_LEN]  # [modified]  length <= MAX_SENTENCE_LEN  #TODO
     cdef int restricted_effective_words_positions[MAX_SENTENCE_LEN]  # [modified]  length <= MAX_SENTENCE_LEN  #TODO
-    cdef int sentence_idx[MAX_SENTENCE_LEN + 1]
+    # cdef int sentence_idx[MAX_SENTENCE_LEN + 1]  # [modified] useless
     cdef int restricted_sentence_idx[MAX_SENTENCE_LEN + 1]  # [modified]
     cdef int window = model.window
 
@@ -348,11 +348,11 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
 
     # prepare C structures so we can go "full C" and release the Python GIL
     vlookup = model.wv.vocab  # vocab's type is {}
-    sentence_idx[0] = 0  # indices of the first sentence always start at 0
+    # sentence_idx[0] = 0  # indices of the first sentence always start at 0
     restricted_vlookup = model.restricted_vocab # [modified]
     restricted_sentence_idx[0] = 0  # [modified]
     for sent in sentences:
-        print(sent)
+        # print(sent)
         if not sent:
             continue  # ignore empty sentences; leave effective_sentences unchanged
         for token in sent:
@@ -361,11 +361,11 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
                 continue  # leaving `effective_words` unchanged = shortening the sentence = expanding the window
             if sample and word.sample_int < random_int32(&next_random):
                 continue
-            print(token)
+            # print(token)
             indexes[effective_words] = word.index
             # TODO in or NOT in
             if token in restricted_vlookup:  # [modified]
-                print(token)
+                # print(token)
                 restricted_effective_words_positions[restricted_effective_words] = effective_words  # [modified] ATTENTION! effective_words不仅是count，也是每个effective word在indexes中对应的位置
                 restricted_effective_words += 1  # [modified]
             if hs:
@@ -380,26 +380,26 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
         # across sentence boundaries.
         # indices of sentence number X are between <sentence_idx[X], sentence_idx[X])
         effective_sentences += 1
-        sentence_idx[effective_sentences] = effective_words
+        # sentence_idx[effective_sentences] = effective_words
         restricted_sentence_idx[effective_sentences] = restricted_effective_words  # [modified] 记录每句有几个符合条件的词
 
         if effective_words == MAX_SENTENCE_LEN:
             break  # TODO: log warning, tally overflow?
 
-        if effective_words != 0 and effective_sentences==3:
-            print(effective_sentences)
-            print(sentence_idx[0])
-            print(sentence_idx[1])
-            print(sentence_idx[2])
-            print(sentence_idx[3])
-            print(restricted_sentence_idx[0])
-            print(restricted_sentence_idx[1])
-            print(restricted_sentence_idx[2])
-            print(restricted_sentence_idx[3])
-            print(indexes)
-            print(restricted_effective_words_positions)
-            print('print finished')
-            exit()
+        # if effective_words != 0 and effective_sentences==3:
+        #     print(effective_sentences)
+        #     print(sentence_idx[0])
+        #     print(sentence_idx[1])
+        #     print(sentence_idx[2])
+        #     print(sentence_idx[3])
+        #     print(restricted_sentence_idx[0])
+        #     print(restricted_sentence_idx[1])
+        #     print(restricted_sentence_idx[2])
+        #     print(restricted_sentence_idx[3])
+        #     print(indexes)
+        #     print(restricted_effective_words_positions)
+        #     print('print finished')
+        #     exit()
 
     # precompute "reduced window" offsets in a single randint() call
     for i, item in enumerate(model.random.randint(0, window, effective_words)):
