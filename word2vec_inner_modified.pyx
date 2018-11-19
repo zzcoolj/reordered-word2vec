@@ -382,16 +382,19 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
 
         if effective_words == MAX_SENTENCE_LEN:
             break  # TODO: log warning, tally overflow?
-        print(sentence_idx[0])
-        print(sentence_idx[1])
-        print(sentence_idx[2])
-        print(restricted_sentence_idx[0])
-        print(restricted_sentence_idx[1])
-        print(restricted_sentence_idx[2])
-        print(indexes)
-        print(restricted_effective_words_positions)
-        print('print finished')
-        exit()
+
+        if effective_words != 0:
+            print(effective_sentences)
+            print(sentence_idx[effective_sentences-1])
+            print(sentence_idx[effective_sentences])
+            print(sentence_idx[effective_sentences+1])
+            print(restricted_sentence_idx[effective_sentences-1])
+            print(restricted_sentence_idx[effective_sentences])
+            print(restricted_sentence_idx[effective_sentences+1])
+            print(indexes)
+            print(restricted_effective_words_positions)
+            print('print finished')
+            exit()
 
     # precompute "reduced window" offsets in a single randint() call
     for i, item in enumerate(model.random.randint(0, window, effective_words)):
