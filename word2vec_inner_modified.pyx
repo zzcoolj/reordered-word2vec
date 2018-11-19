@@ -363,7 +363,7 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
             indexes[effective_words] = word.index
             # TODO in or NOT in
             if token in restricted_vlookup:  # [modified]
-                restricted_effective_words_positions.append(effective_words)  # [modified] ATTENTION! effective_words不仅是count，也是每个effective word在indexes中对应的位置
+                restricted_effective_words_positions[restricted_effective_words] = effective_words  # [modified] ATTENTION! effective_words不仅是count，也是每个effective word在indexes中对应的位置
                 restricted_effective_words += 1  # [modified]
             if hs:
                 codelens[effective_words] = <int>len(word.code)
