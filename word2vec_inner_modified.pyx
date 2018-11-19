@@ -351,6 +351,7 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
     restricted_vlookup = model.restricted_vocab # [modified]
     restricted_sentence_idx[0] = 0  # [modified]
     for sent in sentences:
+        print(sent)
         if not sent:
             continue  # ignore empty sentences; leave effective_sentences unchanged
         for token in sent:
@@ -381,6 +382,10 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
 
         if effective_words == MAX_SENTENCE_LEN:
             break  # TODO: log warning, tally overflow?
+        print(sent_idx)
+        print(restricted_sentence_idx)
+        print(restricted_effective_words_positions)
+        exit()
 
     # precompute "reduced window" offsets in a single randint() call
     for i, item in enumerate(model.random.randint(0, window, effective_words)):
