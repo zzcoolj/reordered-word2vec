@@ -67,6 +67,17 @@ cdef void our_saxpy_noblas(const int *N, const float *alpha, const float *X, con
         Y[i * (incY[0])] = (alpha[0]) * X[i * (incX[0])] + Y[i * (incY[0])]
 
 
+# to support random draws from negative-sampling cum_table
+cdef inline unsigned long long bisect_left(np.uint32_t *a, unsigned long long x, unsigned long long lo, unsigned long long hi) nogil:
+    cdef unsigned long long mid
+    while hi > lo:
+        mid = (lo + hi) >> 1
+        if a[mid] >= x:
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo
+
 # this quick & dirty RNG apparently matches Java's (non-Secure)Random
 # note this function side-effects next_random to set up the next number
 cdef inline unsigned long long random_int32(unsigned long long *next_random) nogil:
@@ -149,6 +160,7 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
     cdef int effective_words = 0, effective_sentences = 0
     cdef int restricted_effective_words = 0  # [modified]
     cdef int sent_idx, idx_start, idx_end
+    cdef int restricted_idx_position_start, restricted_idx_position_end  # [modified]
 
     # For hierarchical softmax
     cdef REAL_t *syn1
@@ -180,21 +192,22 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
     sentence_idx[0] = 0  # indices of the first sentence always start at 0
     restricted_vlookup = model.restricted_vocab # [modified]
     restricted_sentence_idx[0] = 0  # [modified]
+
     for sent in sentences:
         if not sent:
             continue  # ignore empty sentences; leave effective_sentences unchanged
-        if effective_sentences < 4: print(sent)
+        # print(sent)
         for token in sent:
             word = vlookup[token] if token in vlookup else None
             if word is None:
                 continue  # leaving `effective_words` unchanged = shortening the sentence = expanding the window
             if sample and word.sample_int < random_int32(&next_random):
                 continue
-            if effective_sentences < 4: print(token)
+            # print(token)
             indexes[effective_words] = word.index
             # TODO in or NOT in
             if token in restricted_vlookup:  # [modified]
-                if effective_sentences < 4: print('--->', token)
+                # print('--->', token)
                 restricted_effective_words_positions[restricted_effective_words] = effective_words  # [modified] ATTENTION! effective_words不仅是count，也是每个effective word在indexes中对应的位置
                 restricted_effective_words += 1  # [modified]
             # if hs:
@@ -211,10 +224,14 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
         effective_sentences += 1
         sentence_idx[effective_sentences] = effective_words
         restricted_sentence_idx[effective_sentences] = restricted_effective_words  # [modified] 记录每句有几个符合条件的词
-        if effective_sentences < 4: print(sent_idx)
-        if effective_sentences < 4: print(restricted_sentence_idx)
-        if effective_sentences < 4: print(indexes)
-        if effective_sentences < 4: print(restricted_effective_words_positions)
+
+        # print('effective_sentences', effective_sentences)
+        # print('effective_words', effective_words)
+        # print('restricted_effective_words', restricted_effective_words)
+        # print(indexes)
+        # print(restricted_effective_words_positions)
+        # print('*************')
+        # if effective_sentences > 2: break
 
         if effective_words == MAX_SENTENCE_LEN:
             break  # TODO: log warning, tally overflow?
@@ -257,32 +274,33 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
     """
 
     # release GIL & train on all sentences
-    # with nogil: TODO
-    for sent_idx in range(effective_sentences): # 以sentence为单位进行训练
-        idx_start = sentence_idx[sent_idx]  # [modified]
-        restricted_idx_position_start = restricted_sentence_idx[sent_idx]  # [modified]
-        idx_end = sentence_idx[sent_idx + 1]  # [modified]
-        restricted_idx_position_end = restricted_sentence_idx[sent_idx + 1]  # [modified]
-        # for i in range(idx_start, idx_end):  # [modified]
-        if sent_idx < 4:
-            print(restricted_effective_words_positions[restricted_idx_position_start: restricted_idx_position_end])
-            print(idx_start)
-            print(idx_end)
-            print('------')
-        for i in restricted_effective_words_positions[restricted_idx_position_start: restricted_idx_position_end]:  # [modified] i 作为target word，其选择收到了限制，不再是从左到右。而j作为context word，其选择依然按照indexes中部分位置从左到右。
-            j = i - window + reduced_windows[i]
-            if j < idx_start:
-                j = idx_start
-            k = i + window + 1 - reduced_windows[i]
-            if k > idx_end:
-                k = idx_end
-            for j in range(j, k):
-                if j == i:
-                    continue
-                # if hs:
-                #     fast_sentence_sg_hs(points[i], codes[i], codelens[i], syn0, syn1, size, indexes[j], _alpha, work, word_locks, _compute_loss, &_running_training_loss)
-                if negative:
-                    next_random = fast_sentence_sg_neg(negative, cum_table, cum_table_len, syn0, syn1neg, size, indexes[i], indexes[j], _alpha, work, next_random, word_locks, _compute_loss, &_running_training_loss)
+    with nogil:
+        # print('***********',effective_sentences,'***********')
+        for sent_idx in range(effective_sentences): # 以sentence为单位进行训练
+            idx_start = sentence_idx[sent_idx]  # [modified]
+            restricted_idx_position_start = restricted_sentence_idx[sent_idx]  # [modified]
+            idx_end = sentence_idx[sent_idx + 1]  # [modified]
+            restricted_idx_position_end = restricted_sentence_idx[sent_idx + 1]  # [modified]
+            # print(restricted_effective_words_positions[restricted_idx_position_start])
+            # print(restricted_effective_words_positions[restricted_idx_position_end-1])
+            # print(idx_start)
+            # print(idx_end)
+            # print('------')
+            # for i in range(idx_start, idx_end):  # [modified]
+            for i in restricted_effective_words_positions[restricted_idx_position_start: restricted_idx_position_end]:  # [modified] i 作为target word，其选择收到了限制，不再是从左到右。而j作为context word，其选择依然按照indexes中部分位置从左到右。
+                j = i - window + reduced_windows[i]
+                if j < idx_start:
+                    j = idx_start
+                k = i + window + 1 - reduced_windows[i]
+                if k > idx_end:
+                    k = idx_end
+                for j in range(j, k):
+                    if j == i:
+                        continue
+                    # if hs:
+                    #     fast_sentence_sg_hs(points[i], codes[i], codelens[i], syn0, syn1, size, indexes[j], _alpha, work, word_locks, _compute_loss, &_running_training_loss)
+                    if negative:
+                        next_random = fast_sentence_sg_neg(negative, cum_table, cum_table_len, syn0, syn1neg, size, indexes[i], indexes[j], _alpha, work, next_random, word_locks, _compute_loss, &_running_training_loss)
 
     model.running_training_loss = _running_training_loss
     return effective_words
