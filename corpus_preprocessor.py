@@ -50,7 +50,8 @@ params = {
 
 def train_models(corpus_file, output_path):
     gs_model = Word2Vec(LineSentence(corpus_file), **params)
-    gs_model.wv.save_word2vec_format(output_path)
+    # gs_model.wv.save_word2vec_format(output_path)
+    gs_model.save(output_path)
 
 
 def evaluate(vec):
@@ -65,14 +66,17 @@ def evaluate(vec):
 
 
 start = time.time()
-train_models('input/enwiki-1G.txt', 'output/test1G-vocab50000-original')
+train_models('input/enwiki-1G.txt', 'output/test1G-vocab50000-353test')
 # train_models('/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt', 'output/test')
 end = time.time()
 print('time (seconds):', end-start)
 
+model = Word2Vec.load('output/test1G-vocab50000-353test')
+print(evaluate(model.wv))
 
-vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-original').wv
-print(evaluate(vec))
+
+# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-original').wv
+# print(evaluate(vec))
 # vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-999').wv
 # print(evaluate(vec))
 # vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-analogy').wv

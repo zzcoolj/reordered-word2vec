@@ -560,6 +560,7 @@ class BaseWordEmbeddingsModel(BaseAny2VecModel):
     def train(self, sentences, total_examples=None, total_words=None,
               epochs=None, start_alpha=None, end_alpha=None, word_count=0,
               queue_factor=2, report_delay=1.0, compute_loss=False, callbacks=()):
+        """Both Word2vec init train and train on loaded model use this train function."""
 
         self.alpha = start_alpha or self.alpha
         self.min_alpha = end_alpha or self.min_alpha
