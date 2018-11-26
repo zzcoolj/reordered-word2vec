@@ -9,8 +9,6 @@ import sys
 sys.path.append('../word_embeddings_evaluator/')
 from evaluator import Evaluator
 
-from scipy import spatial  # TODO NOW delete
-
 
 def read_file_to_dict(file_path):
     l = []
@@ -65,7 +63,7 @@ def evaluate(vec):
 
 
 corpus_file = 'input/enwiki-1G.txt'
-output_path = 'output/test1G-vocab50000-no353test'
+output_path = 'output/test1G-vocab50000-no353-353test'
 # output_path = 'output/test1G-vocab50000-analogy&353&999test'
 # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
 
@@ -76,33 +74,18 @@ print('1st step finished', 'time (seconds):', end-start)
 print('again', gs_model.wv['again'][:10])
 print('love', gs_model.wv['love'][:10])
 print(evaluate(gs_model.wv))
+# gs_model.save(output_path)
+
+gs_model.restricted_type = 1
+start = time.time()
+gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
+end = time.time()
+print('2nd step finished', 'time (seconds):', end-start)
+print('again', gs_model.wv['again'][:10])
+print('love', gs_model.wv['love'][:10])
+print(evaluate(gs_model.wv))
 gs_model.save(output_path)
-
-# gs_model.restricted_type = 2
-#
-# print(evaluate(gs_model.wv))
-#
-# start = time.time()
-# gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
-# end = time.time()
-# print('time (seconds):', end-start)
-# print(evaluate(gs_model.wv))
-
-# print('2nd step finished')
-# print(gs_model.wv['love'])
-# print(gs_model.wv['car'])
-# result = 1 - spatial.distance.cosine(gs_model.wv['love'], gs_model.wv['car'])
-# print(result)
 
 
 # vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-original').wv
 # print(evaluate(vec))
-# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-999').wv
-# print(evaluate(vec))
-# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-analogy').wv
-# print(evaluate(vec))
-# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-analogy&353&999').wv
-# print(evaluate(vec))
-# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-noTrain').wv
-# print(evaluate(vec))
-# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-no353').wv
