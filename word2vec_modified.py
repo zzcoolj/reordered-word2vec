@@ -136,46 +136,22 @@ from six.moves import xrange
 logger = logging.getLogger(__name__)
 
 try:
-    from word2vec_inner_modified import train_batch_sg
+    # raise ImportError('Go to slow mode')  # TODO NOW NOW NOW
+    from word2vec_inner_modified import train_batch_sg_original, train_batch_sg_in, train_batch_sg_notIn
     from gensim.models.word2vec_inner import score_sentence_sg, score_sentence_cbow
     from gensim.models.word2vec_inner import FAST_VERSION, MAX_WORDS_IN_BATCH
 
 except ImportError:
+    print('ERROR')
+    exit()
     # failed... fall back to plain numpy (20-80x slower training than the above)
     FAST_VERSION = -1
     MAX_WORDS_IN_BATCH = 10000
 
-    # # [modified]
-    # def train_batch_sg(model, sentences, alpha, work=None, compute_loss=False):
-    #     """
-    #     Update skip-gram model by training on a sequence of sentences.
-    #     Each sentence is a list of string tokens, which are looked up in the model's
-    #     vocab dictionary. Called internally from `Word2Vec.train()`.
-    #     This is the non-optimized, Python version. If you have cython installed, gensim
-    #     will use the optimized version from word2vec_inner instead.
-    #     """
-    #     result = 0
-    #     for sentence in sentences:
-    #         word_vocabs = [model.wv.vocab[w] for w in sentence if w in model.wv.vocab and
-    #                        model.wv.vocab[w].sample_int > model.random.rand() * 2 ** 32]
-    #         for pos, word in enumerate(word_vocabs):
-    #             reduced_window = model.random.randint(model.window)  # `b` in the original word2vec code
-    #
-    #             # now go over all words from the (reduced) window, predicting each one in turn
-    #             start = max(0, pos - model.window + reduced_window)
-    #             for pos2, word2 in enumerate(word_vocabs[start:(pos + model.window + 1 - reduced_window)], start):
-    #                 # don't train on the `word` itself
-    #                 if pos2 != pos:
-    #                     train_sg_pair(
-    #                         model, model.wv.index2word[word.index], word2.index, alpha, compute_loss=compute_loss
-    #                     )
-    #
-    #         result += len(word_vocabs)
-    #     return result
-
-    def train_batch_cbow(model, sentences, alpha, work=None, neu1=None, compute_loss=False):
+    # [modified]
+    def train_batch_sg(model, sentences, alpha, work=None, compute_loss=False):
         """
-        Update CBOW model by training on a sequence of sentences.
+        Update skip-gram model by training on a sequence of sentences.
         Each sentence is a list of string tokens, which are looked up in the model's
         vocab dictionary. Called internally from `Word2Vec.train()`.
         This is the non-optimized, Python version. If you have cython installed, gensim
@@ -187,82 +163,125 @@ except ImportError:
                            model.wv.vocab[w].sample_int > model.random.rand() * 2 ** 32]
             for pos, word in enumerate(word_vocabs):
                 reduced_window = model.random.randint(model.window)  # `b` in the original word2vec code
+
+                # now go over all words from the (reduced) window, predicting each one in turn
                 start = max(0, pos - model.window + reduced_window)
-                window_pos = enumerate(word_vocabs[start:(pos + model.window + 1 - reduced_window)], start)
-                word2_indices = [word2.index for pos2, word2 in window_pos if (word2 is not None and pos2 != pos)]
-                l1 = np_sum(model.wv.syn0[word2_indices], axis=0)  # 1 x vector_size
-                if word2_indices and model.cbow_mean:
-                    l1 /= len(word2_indices)
-                train_cbow_pair(model, word, word2_indices, l1, alpha, compute_loss=compute_loss)
+                for pos2, word2 in enumerate(word_vocabs[start:(pos + model.window + 1 - reduced_window)], start):
+                    # don't train on the `word` itself
+                    if pos2 != pos:
+                        temp = model.wv['again'][0]
+                        train_sg_pair(
+                            model, model.wv.index2word[word.index], word2.index, alpha, compute_loss=compute_loss
+                        )
+                        if word2.index == 1547:
+                            print('shot!!!!!!')
+
+                        if temp != model.wv['again'][0]:
+                            print(word)
+                            print(word.index)
+                            print(word2)
+                            print(word2.index)
+                            print(temp)
+                            print('after')  # TODO NOW NOW NOW
+                            print(model.wv['again'][:10])
+
             result += len(word_vocabs)
         return result
 
-    def score_sentence_sg(model, sentence, work=None):
-        """
-        Obtain likelihood score for a single sentence in a fitted skip-gram representaion.
-        The sentence is a list of Vocab objects (or None, when the corresponding
-        word is not in the vocabulary). Called internally from `Word2Vec.score()`.
-        This is the non-optimized, Python version. If you have cython installed, gensim
-        will use the optimized version from word2vec_inner instead.
-        """
-        log_prob_sentence = 0.0
-        if model.negative:
-            raise RuntimeError("scoring is only available for HS=True")
-
-        word_vocabs = [model.wv.vocab[w] for w in sentence if w in model.wv.vocab]
-        for pos, word in enumerate(word_vocabs):
-            if word is None:
-                continue  # OOV word in the input sentence => skip
-
-            # now go over all words from the window, predicting each one in turn
-            start = max(0, pos - model.window)
-            for pos2, word2 in enumerate(word_vocabs[start: pos + model.window + 1], start):
-                # don't train on OOV words and on the `word` itself
-                if word2 is not None and pos2 != pos:
-                    log_prob_sentence += score_sg_pair(model, word, word2)
-
-        return log_prob_sentence
-
-    def score_sentence_cbow(model, sentence, work=None, neu1=None):
-        """
-        Obtain likelihood score for a single sentence in a fitted CBOW representaion.
-        The sentence is a list of Vocab objects (or None, where the corresponding
-        word is not in the vocabulary. Called internally from `Word2Vec.score()`.
-        This is the non-optimized, Python version. If you have cython installed, gensim
-        will use the optimized version from word2vec_inner instead.
-        """
-        log_prob_sentence = 0.0
-        if model.negative:
-            raise RuntimeError("scoring is only available for HS=True")
-
-        word_vocabs = [model.wv.vocab[w] for w in sentence if w in model.wv.vocab]
-        for pos, word in enumerate(word_vocabs):
-            if word is None:
-                continue  # OOV word in the input sentence => skip
-
-            start = max(0, pos - model.window)
-            window_pos = enumerate(word_vocabs[start:(pos + model.window + 1)], start)
-            word2_indices = [word2.index for pos2, word2 in window_pos if (word2 is not None and pos2 != pos)]
-            l1 = np_sum(model.wv.syn0[word2_indices], axis=0)  # 1 x layer1_size
-            if word2_indices and model.cbow_mean:
-                l1 /= len(word2_indices)
-            log_prob_sentence += score_cbow_pair(model, word, l1)
-
-        return log_prob_sentence
+    # def train_batch_cbow(model, sentences, alpha, work=None, neu1=None, compute_loss=False):
+    #     """
+    #     Update CBOW model by training on a sequence of sentences.
+    #     Each sentence is a list of string tokens, which are looked up in the model's
+    #     vocab dictionary. Called internally from `Word2Vec.train()`.
+    #     This is the non-optimized, Python version. If you have cython installed, gensim
+    #     will use the optimized version from word2vec_inner instead.
+    #     """
+    #     result = 0
+    #     for sentence in sentences:
+    #         word_vocabs = [model.wv.vocab[w] for w in sentence if w in model.wv.vocab and
+    #                        model.wv.vocab[w].sample_int > model.random.rand() * 2 ** 32]
+    #         for pos, word in enumerate(word_vocabs):
+    #             reduced_window = model.random.randint(model.window)  # `b` in the original word2vec code
+    #             start = max(0, pos - model.window + reduced_window)
+    #             window_pos = enumerate(word_vocabs[start:(pos + model.window + 1 - reduced_window)], start)
+    #             word2_indices = [word2.index for pos2, word2 in window_pos if (word2 is not None and pos2 != pos)]
+    #             l1 = np_sum(model.wv.syn0[word2_indices], axis=0)  # 1 x vector_size
+    #             if word2_indices and model.cbow_mean:
+    #                 l1 /= len(word2_indices)
+    #             train_cbow_pair(model, word, word2_indices, l1, alpha, compute_loss=compute_loss)
+    #         result += len(word_vocabs)
+    #     return result
+    #
+    # def score_sentence_sg(model, sentence, work=None):
+    #     """
+    #     Obtain likelihood score for a single sentence in a fitted skip-gram representaion.
+    #     The sentence is a list of Vocab objects (or None, when the corresponding
+    #     word is not in the vocabulary). Called internally from `Word2Vec.score()`.
+    #     This is the non-optimized, Python version. If you have cython installed, gensim
+    #     will use the optimized version from word2vec_inner instead.
+    #     """
+    #     log_prob_sentence = 0.0
+    #     if model.negative:
+    #         raise RuntimeError("scoring is only available for HS=True")
+    #
+    #     word_vocabs = [model.wv.vocab[w] for w in sentence if w in model.wv.vocab]
+    #     for pos, word in enumerate(word_vocabs):
+    #         if word is None:
+    #             continue  # OOV word in the input sentence => skip
+    #
+    #         # now go over all words from the window, predicting each one in turn
+    #         start = max(0, pos - model.window)
+    #         for pos2, word2 in enumerate(word_vocabs[start: pos + model.window + 1], start):
+    #             # don't train on OOV words and on the `word` itself
+    #             if word2 is not None and pos2 != pos:
+    #                 log_prob_sentence += score_sg_pair(model, word, word2)
+    #
+    #     return log_prob_sentence
+    #
+    # def score_sentence_cbow(model, sentence, work=None, neu1=None):
+    #     """
+    #     Obtain likelihood score for a single sentence in a fitted CBOW representaion.
+    #     The sentence is a list of Vocab objects (or None, where the corresponding
+    #     word is not in the vocabulary. Called internally from `Word2Vec.score()`.
+    #     This is the non-optimized, Python version. If you have cython installed, gensim
+    #     will use the optimized version from word2vec_inner instead.
+    #     """
+    #     log_prob_sentence = 0.0
+    #     if model.negative:
+    #         raise RuntimeError("scoring is only available for HS=True")
+    #
+    #     word_vocabs = [model.wv.vocab[w] for w in sentence if w in model.wv.vocab]
+    #     for pos, word in enumerate(word_vocabs):
+    #         if word is None:
+    #             continue  # OOV word in the input sentence => skip
+    #
+    #         start = max(0, pos - model.window)
+    #         window_pos = enumerate(word_vocabs[start:(pos + model.window + 1)], start)
+    #         word2_indices = [word2.index for pos2, word2 in window_pos if (word2 is not None and pos2 != pos)]
+    #         l1 = np_sum(model.wv.syn0[word2_indices], axis=0)  # 1 x layer1_size
+    #         if word2_indices and model.cbow_mean:
+    #             l1 /= len(word2_indices)
+    #         log_prob_sentence += score_cbow_pair(model, word, l1)
+    #
+    #     return log_prob_sentence
 
 
 def train_sg_pair(model, word, context_index, alpha, learn_vectors=True, learn_hidden=True,
                   context_vectors=None, context_locks=None, compute_loss=False, is_ft=False):
     if context_vectors is None:
         if is_ft:
-            context_vectors_vocab = model.wv.syn0_vocab
-            context_vectors_ngrams = model.wv.syn0_ngrams
+            print('[ERROR] go into fastText mode')
+            exit()
+            # context_vectors_vocab = model.wv.syn0_vocab
+            # context_vectors_ngrams = model.wv.syn0_ngrams
         else:
             context_vectors = model.wv.syn0
     if context_locks is None:
         if is_ft:
-            context_locks_vocab = model.syn0_vocab_lockf
-            context_locks_ngrams = model.syn0_ngrams_lockf
+            print('[ERROR] go into fastText mode')
+            exit()
+            # context_locks_vocab = model.syn0_vocab_lockf
+            # context_locks_ngrams = model.syn0_ngrams_lockf
         else:
             context_locks = model.syn0_lockf
 
@@ -271,31 +290,33 @@ def train_sg_pair(model, word, context_index, alpha, learn_vectors=True, learn_h
     predict_word = model.wv.vocab[word]  # target word (NN output)
 
     if is_ft:
-        l1_vocab = context_vectors_vocab[context_index[0]]
-        l1_ngrams = np_sum(context_vectors_ngrams[context_index[1:]], axis=0)
-        if context_index:
-            l1 = np_sum([l1_vocab, l1_ngrams], axis=0) / len(context_index)
+        print('[ERROR] go into fastText mode')
+        exit()
+        # l1_vocab = context_vectors_vocab[context_index[0]]
+        # l1_ngrams = np_sum(context_vectors_ngrams[context_index[1:]], axis=0)
+        # if context_index:
+        #     l1 = np_sum([l1_vocab, l1_ngrams], axis=0) / len(context_index)
     else:
         l1 = context_vectors[context_index]  # input word (NN input/projection layer)
         lock_factor = context_locks[context_index]
 
     neu1e = zeros(l1.shape)
 
-    if model.hs:
-        # work on the entire tree at once, to push as much work into numpy's C routines as possible (performance)
-        l2a = deepcopy(model.syn1[predict_word.point])  # 2d matrix, codelen x layer1_size
-        prod_term = dot(l1, l2a.T)
-        fa = expit(prod_term)  # propagate hidden -> output
-        ga = (1 - predict_word.code - fa) * alpha  # vector of error gradients multiplied by the learning rate
-        if learn_hidden:
-            model.syn1[predict_word.point] += outer(ga, l1)  # learn hidden -> output
-        neu1e += dot(ga, l2a)  # save error
-
-        # loss component corresponding to hierarchical softmax
-        if compute_loss:
-            sgn = (-1.0) ** predict_word.code  # `ch` function, 0 -> 1, 1 -> -1
-            lprob = -log(expit(-sgn * prod_term))
-            model.running_training_loss += sum(lprob)
+    # if model.hs:
+    #     # work on the entire tree at once, to push as much work into numpy's C routines as possible (performance)
+    #     l2a = deepcopy(model.syn1[predict_word.point])  # 2d matrix, codelen x layer1_size
+    #     prod_term = dot(l1, l2a.T)
+    #     fa = expit(prod_term)  # propagate hidden -> output
+    #     ga = (1 - predict_word.code - fa) * alpha  # vector of error gradients multiplied by the learning rate
+    #     if learn_hidden:
+    #         model.syn1[predict_word.point] += outer(ga, l1)  # learn hidden -> output
+    #     neu1e += dot(ga, l2a)  # save error
+    #
+    #     # loss component corresponding to hierarchical softmax
+    #     if compute_loss:
+    #         sgn = (-1.0) ** predict_word.code  # `ch` function, 0 -> 1, 1 -> -1
+    #         lprob = -log(expit(-sgn * prod_term))
+    #         model.running_training_loss += sum(lprob)
 
     if model.negative:
         # use this word (label = 1) + `negative` other random words not from this sentence (label = 0)
@@ -319,96 +340,98 @@ def train_sg_pair(model, word, context_index, alpha, learn_vectors=True, learn_h
 
     if learn_vectors:
         if is_ft:
-            model.wv.syn0_vocab[context_index[0]] += neu1e * context_locks_vocab[context_index[0]]
-            for i in context_index[1:]:
-                model.wv.syn0_ngrams[i] += neu1e * context_locks_ngrams[i]
+            print('[ERROR] go into fastText mode')
+            exit()
+            # model.wv.syn0_vocab[context_index[0]] += neu1e * context_locks_vocab[context_index[0]]
+            # for i in context_index[1:]:
+            #     model.wv.syn0_ngrams[i] += neu1e * context_locks_ngrams[i]
         else:
             l1 += neu1e * lock_factor  # learn input -> hidden (mutates model.wv.syn0[word2.index], if that is l1)
     return neu1e
 
 
-def train_cbow_pair(model, word, input_word_indices, l1, alpha, learn_vectors=True, learn_hidden=True,
-                    compute_loss=False, context_vectors=None, context_locks=None, is_ft=False):
-    if context_vectors is None:
-        if is_ft:
-            context_vectors_vocab = model.wv.syn0_vocab
-            context_vectors_ngrams = model.wv.syn0_ngrams
-        else:
-            context_vectors = model.wv.syn0
-    if context_locks is None:
-        if is_ft:
-            context_locks_vocab = model.syn0_vocab_lockf
-            context_locks_ngrams = model.syn0_ngrams_lockf
-        else:
-            context_locks = model.syn0_lockf
-
-    neu1e = zeros(l1.shape)
-
-    if model.hs:
-        l2a = model.syn1[word.point]  # 2d matrix, codelen x layer1_size
-        prod_term = dot(l1, l2a.T)
-        fa = expit(prod_term)  # propagate hidden -> output
-        ga = (1. - word.code - fa) * alpha  # vector of error gradients multiplied by the learning rate
-        if learn_hidden:
-            model.syn1[word.point] += outer(ga, l1)  # learn hidden -> output
-        neu1e += dot(ga, l2a)  # save error
-
-        # loss component corresponding to hierarchical softmax
-        if compute_loss:
-            sgn = (-1.0) ** word.code  # ch function, 0-> 1, 1 -> -1
-            model.running_training_loss += sum(-log(expit(-sgn * prod_term)))
-
-    if model.negative:
-        # use this word (label = 1) + `negative` other random words not from this sentence (label = 0)
-        word_indices = [word.index]
-        while len(word_indices) < model.negative + 1:
-            w = model.cum_table.searchsorted(model.random.randint(model.cum_table[-1]))
-            if w != word.index:
-                word_indices.append(w)
-        l2b = model.syn1neg[word_indices]  # 2d matrix, k+1 x layer1_size
-        prod_term = dot(l1, l2b.T)
-        fb = expit(prod_term)  # propagate hidden -> output
-        gb = (model.neg_labels - fb) * alpha  # vector of error gradients multiplied by the learning rate
-        if learn_hidden:
-            model.syn1neg[word_indices] += outer(gb, l1)  # learn hidden -> output
-        neu1e += dot(gb, l2b)  # save error
-
-        # loss component corresponding to negative sampling
-        if compute_loss:
-            model.running_training_loss -= sum(log(expit(-1 * prod_term[1:])))  # for the sampled words
-            model.running_training_loss -= log(expit(prod_term[0]))  # for the output word
-
-    if learn_vectors:
-        # learn input -> hidden, here for all words in the window separately
-        if is_ft:
-            if not model.cbow_mean and input_word_indices:
-                neu1e /= (len(input_word_indices[0]) + len(input_word_indices[1]))
-            for i in input_word_indices[0]:
-                context_vectors_vocab[i] += neu1e * context_locks_vocab[i]
-            for i in input_word_indices[1]:
-                context_vectors_ngrams[i] += neu1e * context_locks_ngrams[i]
-        else:
-            if not model.cbow_mean and input_word_indices:
-                neu1e /= len(input_word_indices)
-            for i in input_word_indices:
-                context_vectors[i] += neu1e * context_locks[i]
-
-    return neu1e
-
-
-def score_sg_pair(model, word, word2):
-    l1 = model.wv.syn0[word2.index]
-    l2a = deepcopy(model.syn1[word.point])  # 2d matrix, codelen x layer1_size
-    sgn = (-1.0) ** word.code  # ch function, 0-> 1, 1 -> -1
-    lprob = -logaddexp(0, -sgn * dot(l1, l2a.T))
-    return sum(lprob)
-
-
-def score_cbow_pair(model, word, l1):
-    l2a = model.syn1[word.point]  # 2d matrix, codelen x layer1_size
-    sgn = (-1.0) ** word.code  # ch function, 0-> 1, 1 -> -1
-    lprob = -logaddexp(0, -sgn * dot(l1, l2a.T))
-    return sum(lprob)
+# def train_cbow_pair(model, word, input_word_indices, l1, alpha, learn_vectors=True, learn_hidden=True,
+#                     compute_loss=False, context_vectors=None, context_locks=None, is_ft=False):
+#     if context_vectors is None:
+#         if is_ft:
+#             context_vectors_vocab = model.wv.syn0_vocab
+#             context_vectors_ngrams = model.wv.syn0_ngrams
+#         else:
+#             context_vectors = model.wv.syn0
+#     if context_locks is None:
+#         if is_ft:
+#             context_locks_vocab = model.syn0_vocab_lockf
+#             context_locks_ngrams = model.syn0_ngrams_lockf
+#         else:
+#             context_locks = model.syn0_lockf
+#
+#     neu1e = zeros(l1.shape)
+#
+#     if model.hs:
+#         l2a = model.syn1[word.point]  # 2d matrix, codelen x layer1_size
+#         prod_term = dot(l1, l2a.T)
+#         fa = expit(prod_term)  # propagate hidden -> output
+#         ga = (1. - word.code - fa) * alpha  # vector of error gradients multiplied by the learning rate
+#         if learn_hidden:
+#             model.syn1[word.point] += outer(ga, l1)  # learn hidden -> output
+#         neu1e += dot(ga, l2a)  # save error
+#
+#         # loss component corresponding to hierarchical softmax
+#         if compute_loss:
+#             sgn = (-1.0) ** word.code  # ch function, 0-> 1, 1 -> -1
+#             model.running_training_loss += sum(-log(expit(-sgn * prod_term)))
+#
+#     if model.negative:
+#         # use this word (label = 1) + `negative` other random words not from this sentence (label = 0)
+#         word_indices = [word.index]
+#         while len(word_indices) < model.negative + 1:
+#             w = model.cum_table.searchsorted(model.random.randint(model.cum_table[-1]))
+#             if w != word.index:
+#                 word_indices.append(w)
+#         l2b = model.syn1neg[word_indices]  # 2d matrix, k+1 x layer1_size
+#         prod_term = dot(l1, l2b.T)
+#         fb = expit(prod_term)  # propagate hidden -> output
+#         gb = (model.neg_labels - fb) * alpha  # vector of error gradients multiplied by the learning rate
+#         if learn_hidden:
+#             model.syn1neg[word_indices] += outer(gb, l1)  # learn hidden -> output
+#         neu1e += dot(gb, l2b)  # save error
+#
+#         # loss component corresponding to negative sampling
+#         if compute_loss:
+#             model.running_training_loss -= sum(log(expit(-1 * prod_term[1:])))  # for the sampled words
+#             model.running_training_loss -= log(expit(prod_term[0]))  # for the output word
+#
+#     if learn_vectors:
+#         # learn input -> hidden, here for all words in the window separately
+#         if is_ft:
+#             if not model.cbow_mean and input_word_indices:
+#                 neu1e /= (len(input_word_indices[0]) + len(input_word_indices[1]))
+#             for i in input_word_indices[0]:
+#                 context_vectors_vocab[i] += neu1e * context_locks_vocab[i]
+#             for i in input_word_indices[1]:
+#                 context_vectors_ngrams[i] += neu1e * context_locks_ngrams[i]
+#         else:
+#             if not model.cbow_mean and input_word_indices:
+#                 neu1e /= len(input_word_indices)
+#             for i in input_word_indices:
+#                 context_vectors[i] += neu1e * context_locks[i]
+#
+#     return neu1e
+#
+#
+# def score_sg_pair(model, word, word2):
+#     l1 = model.wv.syn0[word2.index]
+#     l2a = deepcopy(model.syn1[word.point])  # 2d matrix, codelen x layer1_size
+#     sgn = (-1.0) ** word.code  # ch function, 0-> 1, 1 -> -1
+#     lprob = -logaddexp(0, -sgn * dot(l1, l2a.T))
+#     return sum(lprob)
+#
+#
+# def score_cbow_pair(model, word, l1):
+#     l2a = model.syn1[word.point]  # 2d matrix, codelen x layer1_size
+#     sgn = (-1.0) ** word.code  # ch function, 0-> 1, 1 -> -1
+#     lprob = -logaddexp(0, -sgn * dot(l1, l2a.T))
+#     return sum(lprob)
 
 
 class Word2Vec(BaseWordEmbeddingsModel):
@@ -428,7 +451,7 @@ class Word2Vec(BaseWordEmbeddingsModel):
                  max_vocab_size=None, sample=1e-3, seed=1, workers=3, min_alpha=0.0001,
                  sg=0, hs=0, negative=5, cbow_mean=1, hashfxn=hash, iter=5, null_word=0,
                  trim_rule=None, sorted_vocab=1, batch_words=MAX_WORDS_IN_BATCH, compute_loss=False, callbacks=(),
-                 restricted_vocab=None):
+                 restricted_vocab=None, restricted_type=0):
         """
         Initialize the model from an iterable of `sentences`. Each sentence is a
         list of words (unicode strings) that will be used for training.
@@ -515,6 +538,7 @@ class Word2Vec(BaseWordEmbeddingsModel):
         """
 
         self.restricted_vocab = restricted_vocab  # [modified]
+        self.restricted_type = restricted_type  # [modified]
         self.callbacks = callbacks
         self.load = call_on_class_only
 
@@ -538,9 +562,19 @@ class Word2Vec(BaseWordEmbeddingsModel):
         work, neu1 = inits
         tally = 0
         if self.sg:
-            tally += train_batch_sg(self, sentences, alpha, work, self.compute_loss)
+            if self.restricted_type == 0:
+                tally += train_batch_sg_original(self, sentences, alpha, work, self.compute_loss)
+            elif self.restricted_type == 1:
+                tally += train_batch_sg_in(self, sentences, alpha, work, self.compute_loss)
+            elif self.restricted_type == 2:
+                tally += train_batch_sg_notIn(self, sentences, alpha, work, self.compute_loss)
+            else:
+                print('[ERROR] restricted_type wrong')
+                exit()
         else:
-            tally += train_batch_cbow(self, sentences, alpha, work, neu1, self.compute_loss)
+            print('[ERROR] go into train_batch_cbow')
+            exit()
+            # tally += train_batch_cbow(self, sentences, alpha, work, neu1, self.compute_loss)
         return tally, self._raw_word_count(sentences)
 
     def _clear_post_train(self):
@@ -1422,7 +1456,9 @@ class Word2VecTrainables(utils.SaveLoad):
             # construct deterministic seed from word AND seed argument
             wv.vectors[i] = self.seeded_vector(wv.index2word[i] + str(self.seed), wv.vector_size)
         if hs:
-            self.syn1 = zeros((len(wv.vocab), self.layer1_size), dtype=REAL)
+            print('[ERROR] go into hs mode')
+            exit()
+            # self.syn1 = zeros((len(wv.vocab), self.layer1_size), dtype=REAL)
         if negative:
             self.syn1neg = zeros((len(wv.vocab), self.layer1_size), dtype=REAL)
         wv.vectors_norm = None

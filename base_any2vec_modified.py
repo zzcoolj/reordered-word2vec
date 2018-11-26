@@ -18,6 +18,7 @@ from types import GeneratorType
 from gensim.utils import deprecated
 import warnings
 
+
 try:
     from queue import Queue
 except ImportError:
@@ -334,7 +335,9 @@ class BaseWordEmbeddingsModel(BaseAny2VecModel):
                 raise TypeError("You can't pass a generator as the sentences argument. Try an iterator.")
             self.build_vocab(sentences, trim_rule=trim_rule)
             # TODO NOW NOW NOW
-            # print('Stop here with no train.')
+            print('Vocab just initialized')
+            print('again', self.wv['again'][:10])
+            print('lvoe', self.wv['love'][:10])
             self.train(
                 sentences, total_examples=self.corpus_count, epochs=self.epochs, start_alpha=self.alpha,
                 end_alpha=self.min_alpha, compute_loss=compute_loss)
@@ -478,6 +481,7 @@ class BaseWordEmbeddingsModel(BaseAny2VecModel):
             Indicates how many words to process before showing/updating the progress.
 
         """
+        print('build vocab')  # TODO NOW NOW NOW
         total_words, corpus_count = self.vocabulary.scan_vocab(
             sentences, progress_per=progress_per, trim_rule=trim_rule)
         self.corpus_count = corpus_count
@@ -561,6 +565,7 @@ class BaseWordEmbeddingsModel(BaseAny2VecModel):
               epochs=None, start_alpha=None, end_alpha=None, word_count=0,
               queue_factor=2, report_delay=1.0, compute_loss=False, callbacks=()):
         """Both Word2vec init train and train on loaded model use this train function."""
+        # TODO ATTENTION: print('go to train function in base_any2vec_modified.py')
 
         self.alpha = start_alpha or self.alpha
         self.min_alpha = end_alpha or self.min_alpha
