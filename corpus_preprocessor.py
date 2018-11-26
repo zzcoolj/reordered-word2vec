@@ -31,7 +31,7 @@ loss = 'ns'
 t = 1e-4
 workers = 3  # 3 by default
 
-restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/999.txt')
+restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy.txt')
 restricted_type = 1
 
 # Same values as used for fastText training above
@@ -64,7 +64,7 @@ def evaluate(vec):
 
 
 corpus_file = 'input/enwiki-1G.txt'
-output_path = 'output/test1G-vocab50000-999test'
+output_path = 'output/test1G-vocab50000-analogytest'
 # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
 
 start = time.time()
