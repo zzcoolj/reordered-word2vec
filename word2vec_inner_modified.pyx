@@ -314,12 +314,11 @@ def train_batch_sg_in(model, sentences, alpha, _work, compute_loss):
             # print(token)
             indexes[effective_words] = word.index
             if token in restricted_vlookup:  # [modified]
-                # print('--->', token)
-                # TODO NOW NOW NOW
-                if token == 'again':
-                    print('[ERROR] again is target word')
-                if token == 'love':
-                    print('love is target word and its index is', word.index)
+                # # TODO NOW NOW NOW
+                # if token == 'again':
+                #     print('[ERROR] again is target word')
+                # if token == 'love':
+                #     print('love is target word and its index is', word.index)
                 restricted_effective_words_positions[restricted_effective_words] = effective_words  # [modified] ATTENTION! effective_words不仅是count，也是每个effective word在indexes中对应的位置
                 restricted_effective_words += 1  # [modified]
             # if hs:
@@ -386,7 +385,7 @@ def train_batch_sg_in(model, sentences, alpha, _work, compute_loss):
     """
 
     # release GIL & train on all sentences
-    with nogil:  # TODO NOW NOW NOW
+    with nogil:
         for sent_idx in range(effective_sentences): # 以sentence为单位进行训练
             idx_start = sentence_idx[sent_idx]  # [modified]
             restricted_idx_position_start = restricted_sentence_idx[sent_idx]  # [modified]
