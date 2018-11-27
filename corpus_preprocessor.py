@@ -31,7 +31,7 @@ workers = 3  # 3 by default
 
 # restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
 restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/999.txt')
-restricted_type = 1
+restricted_type = 2
 
 # Same values as used for fastText training above
 params = {
@@ -63,7 +63,7 @@ def evaluate(vec):
 
 
 corpus_file = 'input/enwiki-1G.txt'
-output_path = 'output/test1G-vocab50000-999-no999test'
+output_path = 'output/test1G-vocab50000-no999-999test'
 # output_path = 'output/test1G-vocab50000-analogy&353&999test'
 # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
 
@@ -76,7 +76,7 @@ print('go', gs_model.wv['go'][:10])
 print(evaluate(gs_model.wv))
 # gs_model.save(output_path)
 
-gs_model.restricted_type = 2
+gs_model.restricted_type = 1
 start = time.time()
 gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
 end = time.time()
