@@ -337,7 +337,7 @@ class BaseWordEmbeddingsModel(BaseAny2VecModel):
             # TODO NOW NOW NOW
             print('Vocab just initialized')
             print('again', self.wv['again'][:10])
-            print('love', self.wv['love'][:10])
+            print('go', self.wv['go'][:10])
             self.train(
                 sentences, total_examples=self.corpus_count, epochs=self.epochs, start_alpha=self.alpha,
                 end_alpha=self.min_alpha, compute_loss=compute_loss)
