@@ -29,9 +29,9 @@ loss = 'ns'
 t = 1e-4
 workers = 3  # 3 by default
 
-restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
-# restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy.txt')
-restricted_type = 2
+# restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
+restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')
+restricted_type = 1
 
 # Same values as used for fastText training above
 params = {
@@ -78,10 +78,11 @@ print('go', gs_model.wv['go'][:10])
 print(evaluate(gs_model.wv))
 # gs_model.save(output_path)
 
-gs_model.restricted_type = 1
+gs_model.restricted_type = 2
 start = time.time()
 gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
 end = time.time()
+exit()
 print('2nd step finished', 'time (seconds):', end-start)
 print('again', gs_model.wv['again'][:10])
 print('go', gs_model.wv['go'][:10])
