@@ -78,6 +78,10 @@ print('go', gs_model.wv['go'][:10])
 print(evaluate(gs_model.wv))
 # gs_model.save(output_path)
 
+print('alpha', gs_model.alpha)
+print('min_alpha', gs_model.min_alpha)
+print('min_alpha_yet_reached', gs_model.min_alpha_yet_reached)
+
 gs_model.restricted_type = 2
 start = time.time()
 gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
