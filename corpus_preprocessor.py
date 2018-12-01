@@ -31,7 +31,7 @@ workers = 3  # 3 by default
 
 # restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
 restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy_first3.txt')
-restricted_type = 1
+restricted_type = 2
 
 # Same values as used for fastText training above
 params = {
@@ -64,7 +64,7 @@ def evaluate(vec):
 
 corpus_file = 'input/enwiki-1G.txt'
 # output_path = 'output/test1G-vocab50000-noAnalogy&353&999-analogy&353&999test'
-output_path = 'output/test1G-vocab50000-analogy_first3-noAnalogy_first3'
+output_path = 'output/test1G-vocab50000-noAnalogy_first3-analogy_first3'
 # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
 
 print(output_path)
@@ -74,12 +74,12 @@ gs_model = Word2Vec(LineSentence(corpus_file), **params)
 end = time.time()
 print('1st step finished', 'time (seconds):', end-start)
 print('again', gs_model.wv['again'][:10])
-# print('go', gs_model.wv['go'][:10])
-print('love', gs_model.wv['love'][:10])
+print('go', gs_model.wv['go'][:10])
+# print('love', gs_model.wv['love'][:10])
 print(evaluate(gs_model.wv))
 # gs_model.save(output_path)
 
-gs_model.restricted_type = 2
+gs_model.restricted_type = 1
 start = time.time()
 # gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
 #                start_alpha=gs_model.min_alpha_yet_reached)  # TODO check whether this start_alpha works
@@ -87,8 +87,8 @@ gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, 
 end = time.time()
 print('2nd step finished', 'time (seconds):', end-start)
 print('again', gs_model.wv['again'][:10])
-# print('go', gs_model.wv['go'][:10])
-print('love', gs_model.wv['love'][:10])
+print('go', gs_model.wv['go'][:10])
+# print('love', gs_model.wv['love'][:10])
 print(evaluate(gs_model.wv))
 gs_model.save(output_path)
 
