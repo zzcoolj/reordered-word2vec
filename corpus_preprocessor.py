@@ -30,7 +30,7 @@ t = 1e-4
 workers = 3  # 3 by default
 
 # restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
-restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/999.txt')  # TODO NOW
+restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')  # TODO NOW
 restricted_type = 1  # TODO NOW
 
 # Same values as used for fastText training above
@@ -100,7 +100,7 @@ def evaluate(vec):
 
 """ Entire Training """
 corpus_file = 'input/enwiki-1G.txt'
-output_path = 'output/test1G-vocab50000-999-no999-entire-alphaControl'
+output_path = 'output/test1G-vocab50000-353-no353-entire-alphaControl'
 print(output_path)
 gs_model = Word2Vec(LineSentence(corpus_file), **params)
 gs_model.restricted_type = 2
