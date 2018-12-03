@@ -335,10 +335,10 @@ class BaseWordEmbeddingsModel(BaseAny2VecModel):
                 raise TypeError("You can't pass a generator as the sentences argument. Try an iterator.")
             self.build_vocab(sentences, trim_rule=trim_rule)
             # TODO NOW NOW NOW
-            print('Vocab just initialized')
-            print('again', self.wv['again'][:10])
+            # print('Vocab just initialized')
+            # print('again', self.wv['again'][:10])
             # print('go', self.wv['go'][:10])
-            print('love', self.wv['love'][:10])
+            # print('love', self.wv['love'][:10])
             self.train(
                 sentences, total_examples=self.corpus_count, epochs=self.epochs, start_alpha=self.alpha,
                 end_alpha=self.min_alpha, compute_loss=compute_loss)
