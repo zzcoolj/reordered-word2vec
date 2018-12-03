@@ -65,9 +65,9 @@ def evaluate(vec):
 """ Separate Training """
 corpus_file = 'input/enwiki-1G.txt'
 # output_path = 'output/test1G-vocab50000-noAnalogy&353&999-analogy&353&999test'
-output_path = 'output/test1G-vocab50000-no999-999-0.08'
+output_path = 'output/test1G-vocab50000-no999-999-0.09'
 # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
-start_alpha = 0.08
+start_alpha = 0.09
 # start_alpha=gs_model.min_alpha_yet_reached
 
 print(output_path)
