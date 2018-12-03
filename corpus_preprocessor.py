@@ -31,7 +31,7 @@ workers = 3  # 3 by default
 
 # restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
 restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/999.txt')  # TODO NOW
-restricted_type = 2  # TODO NOW
+restricted_type = 1  # TODO NOW
 
 # Same values as used for fastText training above
 params = {
@@ -100,34 +100,34 @@ def evaluate(vec):
 
 """ Entire Training """
 corpus_file = 'input/enwiki-1G.txt'
-output_path = 'output/test1G-vocab50000-no999-999-entire'
+output_path = 'output/test1G-vocab50000-999-no999-entire'
 print(output_path)
 gs_model = Word2Vec(LineSentence(corpus_file), **params)
-gs_model.restricted_type = 1
+gs_model.restricted_type = 2
 gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
 print(evaluate(gs_model.wv))
 
-gs_model.restricted_type = 2
-gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
 gs_model.restricted_type = 1
+gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
+gs_model.restricted_type = 2
 gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
 print(evaluate(gs_model.wv))
 
-gs_model.restricted_type = 2
-gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
 gs_model.restricted_type = 1
+gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
+gs_model.restricted_type = 2
 gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
 print(evaluate(gs_model.wv))
 
-gs_model.restricted_type = 2
-gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
 gs_model.restricted_type = 1
+gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
+gs_model.restricted_type = 2
 gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
 print(evaluate(gs_model.wv))
 
-gs_model.restricted_type = 2
-gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
 gs_model.restricted_type = 1
+gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
+gs_model.restricted_type = 2
 gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter)
 print(evaluate(gs_model.wv))
 
