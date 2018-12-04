@@ -22,13 +22,16 @@ def read_file_to_dict(file_path):
 lr = 0.05
 dim = 200
 ws = 5
-epoch = 5  # TODO NOW
+epoch = 1  # TODO NOW
 # minCount = 5
 max_vocab_size = 50000
 neg = 5
 loss = 'ns'
 t = 1e-4
 workers = 3  # 3 by default
+
+min_alpha_after_epochs = 0.0001  # TODO NOW
+min_alpha = lr - ((lr - min_alpha_after_epochs) * float(1) / 5)  # TODO NOW
 
 # restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
 restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')  # TODO NOW
@@ -48,7 +51,8 @@ params = {
     'negative': neg,
     'workers': workers,
     'restricted_vocab': restricted_vocab,  # [modified] ATTENTION: It must be a dictionary not a list!
-    'restricted_type': restricted_type  # [modified] 0: train_batch_sg_original; 1: train_batch_sg_in; 2: train_batch_sg_notIn
+    'restricted_type': restricted_type,  # [modified] 0: train_batch_sg_original; 1: train_batch_sg_in; 2: train_batch_sg_notIn
+    'min_alpha': min_alpha
 }
 
 
@@ -86,8 +90,27 @@ def evaluate(vec, output_path):
 
 
 """ Local test """
-corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
-Word2Vec(LineSentence(corpus_file), **params)
+# corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
+# Word2Vec(LineSentence(corpus_file), **params)
+
+
+""" Epoch Simulation """
+corpus_file = 'input/enwiki-1G.txt'
+total_epoch = 5
+
+# epoch 0
+print('cur_epoch', 0)
+gs_model = Word2Vec(LineSentence(corpus_file), **params)
+evaluate(gs_model.wv, 'output/test1G-vocab50000-original-iter0')
+
+for cur_epoch in range(1, total_epoch):
+    # epoch 1-4
+    print('cur_epoch', cur_epoch)
+    start_alpha = lr - ((lr - min_alpha_after_epochs) * float(cur_epoch) / total_epoch)
+    end_alpha = lr - ((lr - min_alpha_after_epochs) * float(cur_epoch+1) / total_epoch)
+    gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
+                   start_alpha=start_alpha, end_alpha=end_alpha)
+    evaluate(gs_model.wv, 'output/test1G-vocab50000-original-iter'+str(cur_epoch))
 
 
 """ Evaluate Embeddings """
