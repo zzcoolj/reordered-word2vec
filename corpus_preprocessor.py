@@ -59,44 +59,45 @@ def evaluate(vec):
     # eval.print_lables_results(labels2, results2)
     labels3, results3 = Evaluator.evaluation_word_pairs(vec, evaluation_data_path='~/Code/word_embeddings_evaluator/data/simlex999.txt')
     # eval.print_lables_results(labels3, results3)
-    return results2 + results3 + results1
+    labels4, results4 = Evaluator.evaluation_word_pairs(vec, evaluation_data_path='~/Code/word_embeddings_evaluator/data/MTURK-771.csv', delimiter=',')
+    return results2 + results3 + results1 + results4
 
 
 """ Separate Training """
-corpus_file = 'input/enwiki-1G.txt'
-# output_path = 'output/test1G-vocab50000-noAnalogy&353&999-analogy&353&999test'
-output_path = 'output/test1G-vocab50000-no999-999-0.09'
-# corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
-start_alpha = 0.09
-# start_alpha=gs_model.min_alpha_yet_reached
-
-print(output_path)
-
-start = time.time()
-gs_model = Word2Vec(LineSentence(corpus_file), **params)
-end = time.time()
-print('1st step finished', 'time (seconds):', end-start)
-# print('again', gs_model.wv['again'][:10])
-# print('go', gs_model.wv['go'][:10])
-# print('love', gs_model.wv['love'][:10])
-print(evaluate(gs_model.wv))
+# corpus_file = 'input/enwiki-1G.txt'
+# # output_path = 'output/test1G-vocab50000-noAnalogy&353&999-analogy&353&999test'
+# output_path = 'output/test1G-vocab50000-no999-999-0.09'
+# # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
+# start_alpha = 0.09
+# # start_alpha=gs_model.min_alpha_yet_reached
+#
+# print(output_path)
+#
+# start = time.time()
+# gs_model = Word2Vec(LineSentence(corpus_file), **params)
+# end = time.time()
+# print('1st step finished', 'time (seconds):', end-start)
+# # print('again', gs_model.wv['again'][:10])
+# # print('go', gs_model.wv['go'][:10])
+# # print('love', gs_model.wv['love'][:10])
+# print(evaluate(gs_model.wv))
+# # gs_model.save(output_path)
+#
+# gs_model.restricted_type = 1
+# start = time.time()
+# gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
+#                start_alpha=start_alpha)
+# end = time.time()
+# print('2nd step finished', 'time (seconds):', end-start)
+# # print('again', gs_model.wv['again'][:10])
+# # print('go', gs_model.wv['go'][:10])
+# # print('love', gs_model.wv['love'][:10])
+# print(evaluate(gs_model.wv))
 # gs_model.save(output_path)
 
-gs_model.restricted_type = 1
-start = time.time()
-gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
-               start_alpha=start_alpha)
-end = time.time()
-print('2nd step finished', 'time (seconds):', end-start)
-# print('again', gs_model.wv['again'][:10])
-# print('go', gs_model.wv['go'][:10])
-# print('love', gs_model.wv['love'][:10])
-print(evaluate(gs_model.wv))
-gs_model.save(output_path)
 
-
-# vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-original').wv
-# print(evaluate(vec))
+vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-original').wv
+print(evaluate(vec))
 
 
 """ Entire Training """
