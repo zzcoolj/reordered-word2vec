@@ -79,7 +79,7 @@ def evaluate(vec, output_path):
     ])
 
     df.loc[0] = [output_path] + results2 + results3 + results4 + results1
-    output_path += '.csv'
+    output_path += '.xlsx'
     writer = pd.ExcelWriter(output_path)
     df.to_excel(writer, 'Sheet1')
     writer.save()
