@@ -262,6 +262,8 @@ class BaseAny2VecModel(utils.SaveLoad):
 
             for callback in self.callbacks:
                 callback.on_epoch_end(self)
+            print('One epoch finished')  # TODO NOW
+            print(self._get_job_params(cur_epoch))
 
         # Log overall time
         total_elapsed = default_timer() - start
