@@ -5,6 +5,7 @@ from gensim.models import KeyedVectors
 from gensim.models.word2vec import LineSentence
 
 import time
+import pandas as pd
 import sys
 sys.path.append('../word_embeddings_evaluator/')
 from evaluator import Evaluator
@@ -51,7 +52,7 @@ params = {
 }
 
 
-def evaluate(vec):
+def evaluate(vec, output_path):
     # evaluation results
     labels1, results1 = Evaluator.evaluation_questions_words(vec)
     # self.print_lables_results(labels1, results1)
@@ -60,7 +61,28 @@ def evaluate(vec):
     labels3, results3 = Evaluator.evaluation_word_pairs(vec, evaluation_data_path='~/Code/word_embeddings_evaluator/data/simlex999.txt')
     # eval.print_lables_results(labels3, results3)
     labels4, results4 = Evaluator.evaluation_word_pairs(vec, evaluation_data_path='~/Code/word_embeddings_evaluator/data/MTURK-771.csv', delimiter=',')
-    return results2 + results3 + results1 + results4
+
+    df = pd.DataFrame(columns=[
+        # word embeddings file name
+        'file name',
+        # wordsim353
+        'wordsim353_Pearson correlation', 'Pearson pvalue',
+        'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+        # simlex999
+        'simlex999_Pearson correlation', 'Pearson pvalue',
+        'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+        # MTURK-771
+        'MTURK771_Pearson correlation', 'Pearson pvalue',
+        'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+        # questions-words
+        'sem_acc', '#sem', 'syn_acc', '#syn', 'total_acc', '#total'
+    ])
+
+    df.loc[0] = [output_path] + results2 + results3 + results4 + results1
+    output_path += '.csv'
+    writer = pd.ExcelWriter(output_path)
+    df.to_excel(writer, 'Sheet1')
+    writer.save()
 
 
 """ Separate Training """
@@ -97,7 +119,7 @@ def evaluate(vec):
 
 
 vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-original').wv
-print(evaluate(vec))
+evaluate(vec, 'output/test1G-vocab50000-original')
 
 
 """ Entire Training """
