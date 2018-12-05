@@ -42,15 +42,15 @@ def alpha_splitter(start, epochs, end=0.0001):
     return alphas
 
 
-total_epoch = 4
-alphas = alpha_splitter(start=0.05, epochs=total_epoch)  # TODO NOW
+total_epoch = 3  # TODO NOW
+alphas = alpha_splitter(start=0.05, epochs=total_epoch)  # TODO NOT NOW
 print('alphas', alphas)
 
 
 lr = 0.05
 dim = 200
 ws = 5
-epoch = 1  # TODO NOW
+epoch = 1  # TODO NOT NOW
 # minCount = 5
 max_vocab_size = 50000
 neg = 5
@@ -60,8 +60,8 @@ workers = 3  # 3 by default
 min_alpha = alphas[1]  # TODO NOW 0.0001
 
 # restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
-restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')  # TODO NOW
-restricted_type = 0  # TODO NOW
+restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')  # TODO NOT NOW
+restricted_type = 0  # TODO NOT NOW
 
 # Same values as used for fastText training above
 params = {
@@ -90,7 +90,7 @@ params = {
 
 """ Epoch Simulation """
 corpus_file = 'input/enwiki-1G.txt'
-xlsx_path = 'output/test1G-vocab50000-original-iter4.xlsx'  # TODO NOW
+xlsx_path = 'output/test1G-vocab50000-original-iter3.xlsx'  # TODO NOW
 
 df = pd.DataFrame(columns=[
     # word embeddings file name
