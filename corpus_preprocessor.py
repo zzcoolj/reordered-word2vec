@@ -42,7 +42,7 @@ def alpha_splitter(start, epochs, end=0.0001):
     return alphas
 
 
-total_epoch = 3  # TODO NOW
+total_epoch = 2  # TODO NOW
 alphas = alpha_splitter(start=0.05, epochs=total_epoch)  # TODO NOT NOW
 print('alphas', alphas)
 
@@ -90,7 +90,7 @@ params = {
 
 """ Epoch Simulation """
 corpus_file = 'input/enwiki-1G.txt'
-xlsx_path = 'output/test1G-vocab50000-original-iter3.xlsx'  # TODO NOW
+xlsx_path = 'output/test1G-vocab50000-original-iter2.xlsx'  # TODO NOW
 
 df = pd.DataFrame(columns=[
     # word embeddings file name
