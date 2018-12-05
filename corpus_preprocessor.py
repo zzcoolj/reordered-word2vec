@@ -44,7 +44,7 @@ t = 1e-4
 workers = 3  # 3 by default
 
 min_alpha_after_epochs = 0.0001  # TODO NOW
-min_alpha = lr - ((lr - min_alpha_after_epochs) * float(1) / 6)  # TODO NOW
+min_alpha = lr - ((lr - min_alpha_after_epochs) * float(1) / 7)  # TODO NOW
 
 # restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
 restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')  # TODO NOW
@@ -76,8 +76,8 @@ params = {
 
 """ Epoch Simulation """
 corpus_file = 'input/enwiki-1G.txt'
-total_epoch = 6
-xlsx_path = 'output/test1G-vocab50000-original-iter6.xlsx'
+total_epoch = 7
+xlsx_path = 'output/test1G-vocab50000-original-iter7.xlsx'
 
 df = pd.DataFrame(columns=[
     # word embeddings file name
