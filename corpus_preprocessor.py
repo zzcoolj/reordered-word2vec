@@ -42,90 +42,86 @@ def alpha_splitter(start, epochs, end=0.0001):
     return alphas
 
 
-total_epoch = 4  # TODO NOW
-alphas = alpha_splitter(start=0.05, epochs=total_epoch)  # TODO NOT NOW
-print('alphas', alphas)
-
-
-lr = 0.05
-dim = 200
-ws = 5
-epoch = 1  # TODO NOT NOW
-# minCount = 5
-max_vocab_size = 50000
-neg = 5
-loss = 'ns'
-t = 1e-4
-workers = 3  # 3 by default
-min_alpha = alphas[1]  # 0.0001
-
-# restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
-restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')  # TODO NOT NOW
-restricted_type = 0  # TODO NOT NOW
-
-# Same values as used for fastText training above
-params = {
-    'alpha': lr,
-    'min_alpha': min_alpha,
-    'size': dim,
-    'window': ws,
-    'iter': epoch,
-    # 'min_count': minCount,
-    'max_vocab_size': max_vocab_size,
-    'sample': t,
-    'sg': 1,  # 1 for skip-gram
-    'hs': 0,  # If 0, and negative is non-zero, negative sampling will be used.
-    'negative': neg,
-    'workers': workers,
-
-    'restricted_vocab': restricted_vocab,  # [modified] ATTENTION: It must be a dictionary not a list!
-    'restricted_type': restricted_type  # [modified] 0: train_batch_sg_original; 1: train_batch_sg_in; 2: train_batch_sg_notIn
-}
-
-
 """ Local test """
 # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
 # Word2Vec(LineSentence(corpus_file), **params)
 
 
 """ Epoch Simulation """
-corpus_file = 'input/enwiki-1G.txt'
-xlsx_path = 'output/test1G-vocab50000-original-iter4.xlsx'  # TODO NOW
+def iteration_simulater(total_epoch):
+    corpus_file = 'input/enwiki-1G.txt'
+    xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '.xlsx'
+    alphas = alpha_splitter(start=0.05, epochs=total_epoch)
+    print('alphas', alphas)
 
-df = pd.DataFrame(columns=[
-    # word embeddings file name
-    'file name',
-    # wordsim353
-    'wordsim353_Pearson correlation', 'Pearson pvalue',
-    'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
-    # simlex999
-    'simlex999_Pearson correlation', 'Pearson pvalue',
-    'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
-    # MTURK-771
-    'MTURK771_Pearson correlation', 'Pearson pvalue',
-    'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
-    # questions-words
-    'sem_acc', '#sem', 'syn_acc', '#syn', 'total_acc', '#total'
-])
+    # epoch 0
+    lr = 0.05
+    dim = 200
+    ws = 5
+    epoch = 1
+    # minCount = 5
+    max_vocab_size = 50000
+    neg = 5
+    t = 1e-4
+    workers = 3  # 3 by default
+    min_alpha = alphas[1]  # 0.0001
 
-# epoch 0
-print('cur_epoch', 0)
-gs_model = Word2Vec(LineSentence(corpus_file), **params)
-df.loc[0] = evaluate(gs_model.wv, 'iter0')
+    # restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
+    restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')
+    restricted_type = 0
 
-for cur_epoch in range(1, total_epoch):
-    print('cur_epoch', cur_epoch)
-    start_alpha = alphas[cur_epoch]
-    end_alpha = alphas[cur_epoch]
-    print('start_alpha', start_alpha)
-    print('end_alpha', end_alpha)
-    gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
-                   start_alpha=start_alpha, end_alpha=end_alpha)
-    df.loc[cur_epoch] = evaluate(gs_model.wv, 'iter'+str(cur_epoch))
+    # Same values as used for fastText training above
+    params = {
+        'alpha': lr,
+        'min_alpha': min_alpha,
+        'size': dim,
+        'window': ws,
+        'iter': epoch,
+        # 'min_count': minCount,
+        'max_vocab_size': max_vocab_size,
+        'sample': t,
+        'sg': 1,  # 1 for skip-gram
+        'hs': 0,  # If 0, and negative is non-zero, negative sampling will be used.
+        'negative': neg,
+        'workers': workers,
 
-writer = pd.ExcelWriter(xlsx_path)
-df.to_excel(writer, 'Sheet1')
-writer.save()
+        'restricted_vocab': restricted_vocab,  # [modified] ATTENTION: It must be a dictionary not a list!
+        'restricted_type': restricted_type  # [modified] 0: train_batch_sg_original; 1: train_batch_sg_in; 2: train_batch_sg_notIn
+    }
+    print('cur_epoch', 0)
+    gs_model = Word2Vec(LineSentence(corpus_file), **params)
+    df = pd.DataFrame(columns=[
+        # word embeddings file name
+        'file name',
+        # wordsim353
+        'wordsim353_Pearson correlation', 'Pearson pvalue',
+        'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+        # simlex999
+        'simlex999_Pearson correlation', 'Pearson pvalue',
+        'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+        # MTURK-771
+        'MTURK771_Pearson correlation', 'Pearson pvalue',
+        'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+        # questions-words
+        'sem_acc', '#sem', 'syn_acc', '#syn', 'total_acc', '#total'
+    ])
+    df.loc[0] = evaluate(gs_model.wv, 'iter0')
+
+    # epoch 1+
+    for cur_epoch in range(1, total_epoch):
+        print('cur_epoch', cur_epoch)
+        start_alpha = alphas[cur_epoch]
+        end_alpha = alphas[cur_epoch+1]
+        print('start_alpha', start_alpha)
+        print('end_alpha', end_alpha)
+        gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
+                       start_alpha=start_alpha, end_alpha=end_alpha)
+        df.loc[cur_epoch] = evaluate(gs_model.wv, 'iter'+str(cur_epoch))
+
+    writer = pd.ExcelWriter(xlsx_path)
+    df.to_excel(writer, 'Sheet1')
+    writer.save()
+
 
 """ Evaluate Embeddings """
 # vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-original').wv
