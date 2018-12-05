@@ -19,6 +19,19 @@ def read_file_to_dict(file_path):
     return dict.fromkeys(l, 1)
 
 
+def evaluate(vec, name):
+    # evaluation results
+    labels1, results1 = Evaluator.evaluation_questions_words(vec)
+    # self.print_lables_results(labels1, results1)
+    labels2, results2 = Evaluator.evaluation_word_pairs(vec, evaluation_data_path='~/Code/word_embeddings_evaluator/data/wordsim353/combined.tab')
+    # eval.print_lables_results(labels2, results2)
+    labels3, results3 = Evaluator.evaluation_word_pairs(vec, evaluation_data_path='~/Code/word_embeddings_evaluator/data/simlex999.txt')
+    # eval.print_lables_results(labels3, results3)
+    labels4, results4 = Evaluator.evaluation_word_pairs(vec, evaluation_data_path='~/Code/word_embeddings_evaluator/data/MTURK-771.csv', delimiter=',')
+
+    return [name] + results2 + results3 + results4 + results1
+
+
 lr = 0.05
 dim = 200
 ws = 5
@@ -31,7 +44,7 @@ t = 1e-4
 workers = 3  # 3 by default
 
 min_alpha_after_epochs = 0.0001  # TODO NOW
-min_alpha = lr - ((lr - min_alpha_after_epochs) * float(1) / 5)  # TODO NOW
+min_alpha = lr - ((lr - min_alpha_after_epochs) * float(1) / 6)  # TODO NOW
 
 # restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
 restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')  # TODO NOW
@@ -56,39 +69,6 @@ params = {
 }
 
 
-def evaluate(vec, output_path):
-    # evaluation results
-    labels1, results1 = Evaluator.evaluation_questions_words(vec)
-    # self.print_lables_results(labels1, results1)
-    labels2, results2 = Evaluator.evaluation_word_pairs(vec, evaluation_data_path='~/Code/word_embeddings_evaluator/data/wordsim353/combined.tab')
-    # eval.print_lables_results(labels2, results2)
-    labels3, results3 = Evaluator.evaluation_word_pairs(vec, evaluation_data_path='~/Code/word_embeddings_evaluator/data/simlex999.txt')
-    # eval.print_lables_results(labels3, results3)
-    labels4, results4 = Evaluator.evaluation_word_pairs(vec, evaluation_data_path='~/Code/word_embeddings_evaluator/data/MTURK-771.csv', delimiter=',')
-
-    df = pd.DataFrame(columns=[
-        # word embeddings file name
-        'file name',
-        # wordsim353
-        'wordsim353_Pearson correlation', 'Pearson pvalue',
-        'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
-        # simlex999
-        'simlex999_Pearson correlation', 'Pearson pvalue',
-        'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
-        # MTURK-771
-        'MTURK771_Pearson correlation', 'Pearson pvalue',
-        'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
-        # questions-words
-        'sem_acc', '#sem', 'syn_acc', '#syn', 'total_acc', '#total'
-    ])
-
-    df.loc[0] = [output_path] + results2 + results3 + results4 + results1
-    output_path += '.xlsx'
-    writer = pd.ExcelWriter(output_path)
-    df.to_excel(writer, 'Sheet1')
-    writer.save()
-
-
 """ Local test """
 # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
 # Word2Vec(LineSentence(corpus_file), **params)
@@ -96,12 +76,30 @@ def evaluate(vec, output_path):
 
 """ Epoch Simulation """
 corpus_file = 'input/enwiki-1G.txt'
-total_epoch = 5
+total_epoch = 6
+xlsx_path = 'output/test1G-vocab50000-original-iter6.xlsx'
+
+df = pd.DataFrame(columns=[
+    # word embeddings file name
+    'file name',
+    # wordsim353
+    'wordsim353_Pearson correlation', 'Pearson pvalue',
+    'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+    # simlex999
+    'simlex999_Pearson correlation', 'Pearson pvalue',
+    'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+    # MTURK-771
+    'MTURK771_Pearson correlation', 'Pearson pvalue',
+    'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+    # questions-words
+    'sem_acc', '#sem', 'syn_acc', '#syn', 'total_acc', '#total'
+])
 
 # epoch 0
 print('cur_epoch', 0)
 gs_model = Word2Vec(LineSentence(corpus_file), **params)
-evaluate(gs_model.wv, 'output/test1G-vocab50000-original-iter0')
+df.loc[0] = evaluate(gs_model.wv, 'iter0')
+
 
 for cur_epoch in range(1, total_epoch):
     # epoch 1-4
@@ -110,8 +108,11 @@ for cur_epoch in range(1, total_epoch):
     end_alpha = lr - ((lr - min_alpha_after_epochs) * float(cur_epoch+1) / total_epoch)
     gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
                    start_alpha=start_alpha, end_alpha=end_alpha)
-    evaluate(gs_model.wv, 'output/test1G-vocab50000-original-iter'+str(cur_epoch))
+    df.loc[cur_epoch] = evaluate(gs_model.wv, 'iter'+str(cur_epoch))
 
+writer = pd.ExcelWriter(xlsx_path)
+df.to_excel(writer, 'Sheet1')
+writer.save()
 
 """ Evaluate Embeddings """
 # vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-original').wv
