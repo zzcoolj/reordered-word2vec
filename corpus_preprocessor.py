@@ -42,9 +42,9 @@ def alpha_splitter(start, epochs, end=0.0001):
     return alphas
 
 
-total_epoch = 2  # TODO NOW
-alphas = alpha_splitter(start=0.05, epochs=total_epoch)  # TODO NOT NOW
-print('alphas', alphas)
+total_epoch = 1  # TODO NOW
+# alphas = alpha_splitter(start=0.05, epochs=total_epoch)  # TODO NOW
+# print('alphas', alphas)
 
 
 lr = 0.05
@@ -57,7 +57,8 @@ neg = 5
 loss = 'ns'
 t = 1e-4
 workers = 3  # 3 by default
-min_alpha = alphas[1]  # TODO NOW 0.0001
+# min_alpha = alphas[1]  # TODO NOW
+min_alpha = 0.0001  # TODO NOW
 
 # restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
 restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')  # TODO NOT NOW
@@ -90,7 +91,7 @@ params = {
 
 """ Epoch Simulation """
 corpus_file = 'input/enwiki-1G.txt'
-xlsx_path = 'output/test1G-vocab50000-original-iter2.xlsx'  # TODO NOW
+xlsx_path = 'output/test1G-vocab50000-original-iter1.xlsx'  # TODO NOW
 
 df = pd.DataFrame(columns=[
     # word embeddings file name
@@ -113,15 +114,15 @@ print('cur_epoch', 0)
 gs_model = Word2Vec(LineSentence(corpus_file), **params)
 df.loc[0] = evaluate(gs_model.wv, 'iter0')
 
-for cur_epoch in range(1, total_epoch):
-    print('cur_epoch', cur_epoch)
-    start_alpha = alphas[cur_epoch]
-    end_alpha = alphas[cur_epoch]
-    print('start_alpha', start_alpha)
-    print('end_alpha', end_alpha)
-    gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
-                   start_alpha=start_alpha, end_alpha=end_alpha)
-    df.loc[cur_epoch] = evaluate(gs_model.wv, 'iter'+str(cur_epoch))
+# for cur_epoch in range(1, total_epoch):
+#     print('cur_epoch', cur_epoch)
+#     start_alpha = alphas[cur_epoch]
+#     end_alpha = alphas[cur_epoch]
+#     print('start_alpha', start_alpha)
+#     print('end_alpha', end_alpha)
+#     gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
+#                    start_alpha=start_alpha, end_alpha=end_alpha)
+#     df.loc[cur_epoch] = evaluate(gs_model.wv, 'iter'+str(cur_epoch))
 
 writer = pd.ExcelWriter(xlsx_path)
 df.to_excel(writer, 'Sheet1')
