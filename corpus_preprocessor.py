@@ -44,45 +44,9 @@ def alpha_splitter(start, epochs, end=0.0001):
 
 def iteration_simulater(total_epoch):
     corpus_file = 'input/enwiki-1G.txt'
-    xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '.xlsx'
+    xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '-firstStricted.xlsx'
     alphas = alpha_splitter(start=0.05, epochs=total_epoch)
     print('alphas', alphas)
-
-    # epoch 0
-    lr = 0.05
-    dim = 200
-    ws = 5
-    epoch = 1
-    # minCount = 5
-    max_vocab_size = 50000
-    neg = 5
-    t = 1e-4
-    workers = 3  # 3 by default
-    min_alpha = alphas[1]  # 0.0001
-
-    # restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/analogy&353&999.txt')
-    restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')
-    restricted_type = 0
-
-    params = {
-        'alpha': lr,
-        'min_alpha': min_alpha,
-        'size': dim,
-        'window': ws,
-        'iter': epoch,
-        # 'min_count': minCount,
-        'max_vocab_size': max_vocab_size,
-        'sample': t,
-        'sg': 1,  # 1 for skip-gram
-        'hs': 0,  # If 0, and negative is non-zero, negative sampling will be used.
-        'negative': neg,
-        'workers': workers,
-
-        'restricted_vocab': restricted_vocab,  # [modified] ATTENTION: It must be a dictionary not a list!
-        'restricted_type': restricted_type  # [modified] 0: train_batch_sg_original; 1: train_batch_sg_in; 2: train_batch_sg_notIn
-    }
-    print('cur_epoch', 0)
-    gs_model = Word2Vec(LineSentence(corpus_file), **params)
     df = pd.DataFrame(columns=[
         # word embeddings file name
         'file name',
@@ -98,9 +62,34 @@ def iteration_simulater(total_epoch):
         # questions-words
         'sem_acc', '#sem', 'syn_acc', '#syn', 'total_acc', '#total'
     ])
+
+    # epoch 0
+    lr = 0.05
+    min_alpha = alphas[1]
+    restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/999.txt')
+    restricted_type = 1
+    params = {
+        'alpha': lr,
+        'min_alpha': min_alpha,
+        'size': 200,
+        'window': 5,
+        'iter': 1,
+        'max_vocab_size': 50000,
+        'sample': 1e-4,
+        'sg': 1,  # 1 for skip-gram
+        'hs': 0,  # If 0, and negative is non-zero, negative sampling will be used.
+        'negative': 5,
+        'workers': 3,
+
+        'restricted_vocab': restricted_vocab,  # [modified] ATTENTION: It must be a dictionary not a list!
+        'restricted_type': restricted_type  # [modified] 0: train_batch_sg_original; 1: train_batch_sg_in; 2: train_batch_sg_notIn
+    }
+    print('cur_epoch', 0)
+    gs_model = Word2Vec(LineSentence(corpus_file), **params)
     df.loc[0] = evaluate(gs_model.wv, 'iter0')
 
     # epoch 1+
+    gs_model.restricted_type = 0
     for cur_epoch in range(1, total_epoch):
         print('cur_epoch', cur_epoch)
         start_alpha = alphas[cur_epoch]
