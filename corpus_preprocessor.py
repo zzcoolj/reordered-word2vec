@@ -116,53 +116,53 @@ def iteration_simulater(total_epoch):
 
 
 """ Normal word embeddings training """
-corpus_file = 'input/enwiki-1G.txt'
-xlsx_path = 'output/test1G-vocab50000-original-alpha.xlsx'
-lrs = [0.06, 0.05, 0.04, 0.03, 0.025, 0.02, 0.01, 0.005]
-
-df = pd.DataFrame(columns=[
-    # word embeddings file name
-    'file name',
-    # wordsim353
-    'wordsim353_Pearson correlation', 'Pearson pvalue',
-    'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
-    # simlex999
-    'simlex999_Pearson correlation', 'Pearson pvalue',
-    'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
-    # MTURK-771
-    'MTURK771_Pearson correlation', 'Pearson pvalue',
-    'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
-    # questions-words
-    'sem_acc', '#sem', 'syn_acc', '#syn', 'total_acc', '#total'
-])
-
-i = 0
-
-for lr in lrs:
-    print(lr)
-    params = {
-        'alpha': lr,
-        'min_alpha': 0.0001,
-        'size': 200,
-        'window': 5,
-        'iter': 5,
-        'max_vocab_size': 50000,
-        'sample': 1e-4,
-        'sg': 1,  # 1 for skip-gram
-        'hs': 0,  # If 0, and negative is non-zero, negative sampling will be used.
-        'negative': 5,
-        'workers': 3,
-
-        'restricted_vocab': None,  # [modified] ATTENTION: It must be a dictionary not a list!
-        'restricted_type': 0  # [modified] 0: train_batch_sg_original; 1: train_batch_sg_in; 2: train_batch_sg_notIn
-    }
-    gs_model = Word2Vec(LineSentence(corpus_file), **params)
-    df.loc[i] = evaluate(gs_model.wv, str(lr))
-    i += 1
-
-writer = pd.ExcelWriter(xlsx_path)
-df.to_excel(writer, 'Sheet1')
-writer.save()
+# corpus_file = 'input/enwiki-1G.txt'
+# xlsx_path = 'output/test1G-vocab50000-original-alpha.xlsx'
+# lrs = [0.06, 0.05, 0.04, 0.03, 0.025, 0.02, 0.01, 0.005]
+#
+# df = pd.DataFrame(columns=[
+#     # word embeddings file name
+#     'file name',
+#     # wordsim353
+#     'wordsim353_Pearson correlation', 'Pearson pvalue',
+#     'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+#     # simlex999
+#     'simlex999_Pearson correlation', 'Pearson pvalue',
+#     'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+#     # MTURK-771
+#     'MTURK771_Pearson correlation', 'Pearson pvalue',
+#     'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+#     # questions-words
+#     'sem_acc', '#sem', 'syn_acc', '#syn', 'total_acc', '#total'
+# ])
+#
+# i = 0
+#
+# for lr in lrs:
+#     print(lr)
+#     params = {
+#         'alpha': lr,
+#         'min_alpha': 0.0001,
+#         'size': 200,
+#         'window': 5,
+#         'iter': 5,
+#         'max_vocab_size': 50000,
+#         'sample': 1e-4,
+#         'sg': 1,  # 1 for skip-gram
+#         'hs': 0,  # If 0, and negative is non-zero, negative sampling will be used.
+#         'negative': 5,
+#         'workers': 3,
+#
+#         'restricted_vocab': None,  # [modified] ATTENTION: It must be a dictionary not a list!
+#         'restricted_type': 0  # [modified] 0: train_batch_sg_original; 1: train_batch_sg_in; 2: train_batch_sg_notIn
+#     }
+#     gs_model = Word2Vec(LineSentence(corpus_file), **params)
+#     df.loc[i] = evaluate(gs_model.wv, str(lr))
+#     i += 1
+#
+# writer = pd.ExcelWriter(xlsx_path)
+# df.to_excel(writer, 'Sheet1')
+# writer.save()
 
 
 """ Entire Training """
