@@ -42,12 +42,6 @@ def alpha_splitter(start, epochs, end=0.0001):
     return alphas
 
 
-""" Local test """
-# corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
-# Word2Vec(LineSentence(corpus_file), **params)
-
-
-""" Epoch Simulation """
 def iteration_simulater(total_epoch):
     corpus_file = 'input/enwiki-1G.txt'
     xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '.xlsx'
@@ -70,7 +64,6 @@ def iteration_simulater(total_epoch):
     restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/353.txt')
     restricted_type = 0
 
-    # Same values as used for fastText training above
     params = {
         'alpha': lr,
         'min_alpha': min_alpha,
@@ -123,42 +116,64 @@ def iteration_simulater(total_epoch):
     writer.save()
 
 
+""" Local test """
+# corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
+# Word2Vec(LineSentence(corpus_file), **params)
+
+
 """ Evaluate Embeddings """
 # vec = KeyedVectors.load_word2vec_format('output/test1G-vocab50000-original').wv
 # evaluate(vec, 'output/test1G-vocab50000-original')
 
 
-""" Separate Training """
-# for end_alpha in [0.0005, 0.001, 0.005, 0.01, 0.025]:  # original: 0.0001
-#     corpus_file = 'input/enwiki-1G.txt'
-#     # output_path = 'output/test1G-vocab50000-noAnalogy&353&999-analogy&353&999test'
-#     output_path = 'output/test1G-vocab50000-no353-353-' + str(end_alpha)
-#     # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
-#     # start_alpha=gs_model.min_alpha_yet_reached
-#
-#     print(output_path)
-#
-#     start = time.time()
-#     gs_model = Word2Vec(LineSentence(corpus_file), **params)
-#     end = time.time()
-#     print('1st step finished', 'time (seconds):', end-start)
-#     # print('again', gs_model.wv['again'][:10])
-#     # print('go', gs_model.wv['go'][:10])
-#     # print('love', gs_model.wv['love'][:10])
-#     print(evaluate(gs_model.wv))
-#     # gs_model.save(output_path)
-#
-#     gs_model.restricted_type = 1
-#     start = time.time()
-#     gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
-#                    end_alpha=end_alpha)
-#     end = time.time()
-#     print('2nd step finished', 'time (seconds):', end-start)
-#     # print('again', gs_model.wv['again'][:10])
-#     # print('go', gs_model.wv['go'][:10])
-#     # print('love', gs_model.wv['love'][:10])
-#     print(evaluate(gs_model.wv))
-#     gs_model.save(output_path)
+""" Normal word embeddings training """
+corpus_file = 'input/enwiki-1G.txt'
+xlsx_path = 'output/test1G-vocab50000-original-alpha.xlsx'
+lrs = [0.06, 0.05, 0.04, 0.03, 0.025, 0.02, 0.01, 0.005]
+
+df = pd.DataFrame(columns=[
+    # word embeddings file name
+    'file name',
+    # wordsim353
+    'wordsim353_Pearson correlation', 'Pearson pvalue',
+    'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+    # simlex999
+    'simlex999_Pearson correlation', 'Pearson pvalue',
+    'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+    # MTURK-771
+    'MTURK771_Pearson correlation', 'Pearson pvalue',
+    'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+    # questions-words
+    'sem_acc', '#sem', 'syn_acc', '#syn', 'total_acc', '#total'
+])
+
+i = 0
+
+for lr in lrs:
+    print(lr)
+    params = {
+        'alpha': lr,
+        'min_alpha': 0.0001,
+        'size': 200,
+        'window': 5,
+        'iter': 5,
+        'max_vocab_size': 50000,
+        'sample': 1e-4,
+        'sg': 1,  # 1 for skip-gram
+        'hs': 0,  # If 0, and negative is non-zero, negative sampling will be used.
+        'negative': 5,
+        'workers': 3,
+
+        'restricted_vocab': None,  # [modified] ATTENTION: It must be a dictionary not a list!
+        'restricted_type': 0  # [modified] 0: train_batch_sg_original; 1: train_batch_sg_in; 2: train_batch_sg_notIn
+    }
+    gs_model = Word2Vec(LineSentence(corpus_file), **params)
+    df.loc[i] = evaluate(gs_model.wv, str(lr))
+    i += 1
+
+writer = pd.ExcelWriter(xlsx_path)
+df.to_excel(writer, 'Sheet1')
+writer.save()
 
 
 """ Entire Training """
