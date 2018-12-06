@@ -44,7 +44,7 @@ def alpha_splitter(start, epochs, end=0.0001):
 
 def iteration_simulater(total_epoch):
     corpus_file = 'input/enwiki-1G.txt'
-    xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '-firstStricted.xlsx'
+    xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '-firstEpochInitial.xlsx'
     alphas = alpha_splitter(start=0.05, epochs=total_epoch)
     print('alphas', alphas)
     df = pd.DataFrame(columns=[
@@ -86,7 +86,13 @@ def iteration_simulater(total_epoch):
     }
     print('cur_epoch', 0)
     gs_model = Word2Vec(LineSentence(corpus_file), **params)
-    df.loc[0] = evaluate(gs_model.wv, 'iter0')
+    df.loc[0] = evaluate(gs_model.wv, 'X-iter0')
+
+    # epoch 0.5
+    gs_model.restricted_type = 2
+    gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
+                   start_alpha=lr, end_alpha=min_alpha)
+    df.loc[1] = evaluate(gs_model.wv, 'X-iter0.5')
 
     # epoch 1+
     gs_model.restricted_type = 0
@@ -98,7 +104,7 @@ def iteration_simulater(total_epoch):
         print('end_alpha', end_alpha)
         gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
                        start_alpha=start_alpha, end_alpha=end_alpha)
-        df.loc[cur_epoch] = evaluate(gs_model.wv, 'iter'+str(cur_epoch))
+        df.loc[cur_epoch+1] = evaluate(gs_model.wv, 'X-iter'+str(cur_epoch))  # TODO NOW remove +1 if no epoch 0.5
 
     writer = pd.ExcelWriter(xlsx_path)
     df.to_excel(writer, 'Sheet1')
