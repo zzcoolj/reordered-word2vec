@@ -563,13 +563,13 @@ class Word2Vec(BaseWordEmbeddingsModel):
         tally = 0
         if self.sg:
             if self.restricted_type == 0:
-                print('original sg')
+                # print('original sg')
                 tally += train_batch_sg_original(self, sentences, alpha, work, self.compute_loss)
             elif self.restricted_type == 1:
-                print('restricted-in sg')
+                # print('restricted-in sg')
                 tally += train_batch_sg_in(self, sentences, alpha, work, self.compute_loss)
             elif self.restricted_type == 2:
-                print('restricted-out sg')
+                # print('restricted-out sg')
                 tally += train_batch_sg_notIn(self, sentences, alpha, work, self.compute_loss)
             else:
                 print('[ERROR] restricted_type wrong')
