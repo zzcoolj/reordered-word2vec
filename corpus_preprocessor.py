@@ -5,10 +5,13 @@ from gensim.models import KeyedVectors
 from gensim.models.word2vec import LineSentence
 
 import time
+import pickle
 import pandas as pd
 import sys
 sys.path.append('../word_embeddings_evaluator/')
+sys.path.append('../common/')
 from evaluator import Evaluator
+from common import write_to_pickle, read_pickle
 
 
 def read_file_to_dict(file_path):
@@ -43,6 +46,7 @@ def alpha_splitter(start, epochs, end=0.0001):
 
 
 def iteration_simulater(total_epoch):
+    # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
     corpus_file = 'input/enwiki-1G.txt'
     xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '-lastEpochInitial.xlsx'
     df = pd.DataFrame(columns=[
@@ -106,17 +110,27 @@ def iteration_simulater(total_epoch):
                        start_alpha=start_alpha, end_alpha=end_alpha)
         df.loc[cur_epoch] = evaluate(gs_model.wv, 'X-iter'+str(cur_epoch))  # TODO NOW remove +1 if no epoch 0.5
 
+    # save common base model
+    write_to_pickle(gs_model, xlsx_path.split('.xlsx')[0]+'-base')
+
     # epoch final 0.5
     gs_model.restricted_type = 1
     gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
                    start_alpha=alphas[-2], end_alpha=alphas[-1])
-    df.loc[total_epoch-1] = evaluate(gs_model.wv, 'X-iter'+str(total_epoch-1))
+    df.loc[total_epoch-1] = evaluate(gs_model.wv, 'X-iter'+str(total_epoch-1)+'-half')
 
     # epoch final
     gs_model.restricted_type = 2
     gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
                    start_alpha=alphas[-2], end_alpha=alphas[-1])
-    df.loc[total_epoch] = evaluate(gs_model.wv, 'X-iter' + str(total_epoch))
+    df.loc[total_epoch] = evaluate(gs_model.wv, 'X-iter' + str(total_epoch-1)+'-entire')
+
+    # baseline (final is original word2vec)
+    gs_model_base = read_pickle(xlsx_path.split('.xlsx')[0] + '-base')
+    gs_model_base.restricted_type = 0
+    gs_model_base.train(LineSentence(corpus_file), total_examples=gs_model_base.corpus_count, epochs=gs_model_base.iter,
+                        start_alpha=alphas[-2], end_alpha=alphas[-1])
+    df.loc[total_epoch+1] = evaluate(gs_model_base.wv, 'X-iter' + str(total_epoch-1)+'-baseline')
 
     writer = pd.ExcelWriter(xlsx_path)
     df.to_excel(writer, 'Sheet1')
