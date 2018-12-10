@@ -45,10 +45,11 @@ def alpha_splitter(start, epochs, end=0.0001):
     return alphas
 
 
-def iteration_simulater(total_epoch):
+def iteration_simulater(total_epoch, restricted_vocab_name):
     # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
     corpus_file = 'input/enwiki-1G.txt'
-    xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '-lastEpochInitial.xlsx'
+    xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '-lastEpochInitial-' + \
+                str(restricted_vocab_name) + '.xlsx'
     df = pd.DataFrame(columns=[
         # word embeddings file name
         'file name',
@@ -70,7 +71,8 @@ def iteration_simulater(total_epoch):
     alphas = alpha_splitter(start=lr, epochs=total_epoch)
     print('alphas', alphas)
     min_alpha = alphas[1]
-    restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/999.txt')
+    restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/' +
+                                         str(restricted_vocab_name) + '.txt')
     restricted_type = 0
     params = {
         'alpha': lr,
