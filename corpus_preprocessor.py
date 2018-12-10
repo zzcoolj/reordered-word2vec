@@ -48,8 +48,8 @@ def alpha_splitter(start, epochs, end=0.0001):
 def iteration_simulater(total_epoch, special_epoch_count, restricted_vocab_name):
     # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
     corpus_file = 'input/enwiki-1G.txt'
-    xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '-lastEpochInitial-' + \
-                str(restricted_vocab_name) + '.xlsx'
+    xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '-last' + str(special_epoch_count) \
+                + 'EpochInitial-' + str(restricted_vocab_name) + '.xlsx'
     df = pd.DataFrame(columns=[
         # word embeddings file name
         'file name',
