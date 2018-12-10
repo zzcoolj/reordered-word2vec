@@ -80,7 +80,7 @@ def iteration_simulater(total_epoch, special_epoch_count, restricted_vocab_name)
         'min_alpha': min_alpha,
         'size': 200,
         'window': 5,
-        'iter': 1,
+        'iter': 0,  # TODO NOW
         'max_vocab_size': 50000,
         'sample': 1e-4,
         'sg': 1,  # 1 for skip-gram
@@ -94,6 +94,7 @@ def iteration_simulater(total_epoch, special_epoch_count, restricted_vocab_name)
     print('cur_epoch', 0)
     gs_model = Word2Vec(LineSentence(corpus_file), **params)
     df.loc[line_number_in_xlsx] = evaluate(gs_model.wv, 'epoch0')
+    gs_model.epochs = 1  # TODO NOW
 
     # # epoch 0.5
     # gs_model.restricted_type = 2
