@@ -161,7 +161,7 @@ def stool_simulator(total_epoch, special_epoch_count, restricted_vocab_name):
     # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
     corpus_file = 'input/enwiki-1G.txt'
     xlsx_path = 'output/test1G-vocab50000-stool-iter' + str(total_epoch) + '-first' + str(special_epoch_count) \
-                + 'EpochFinal-' + str(restricted_vocab_name) + '.xlsx'
+                + 'EpochInitial-' + str(restricted_vocab_name) + '.xlsx'
     df = pd.DataFrame(columns=[
         # word embeddings file name
         'file name',
@@ -185,7 +185,7 @@ def stool_simulator(total_epoch, special_epoch_count, restricted_vocab_name):
     # special starting epochs (final notIn)
     restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/' +
                                          str(restricted_vocab_name) + '.txt')
-    restricted_type = 2
+    restricted_type = 1
     params = {
         'alpha': lr,
         'min_alpha': alphas[special_epoch_count],
@@ -208,7 +208,7 @@ def stool_simulator(total_epoch, special_epoch_count, restricted_vocab_name):
 
     # special starting epochs (final in)
     print('special epochs entire', special_epoch_count)
-    gs_model.restricted_type = 1
+    gs_model.restricted_type = 2
     gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
                    start_alpha=lr, end_alpha=alphas[special_epoch_count])
     line_number_in_xlsx += 1
