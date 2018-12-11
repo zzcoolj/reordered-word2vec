@@ -158,8 +158,8 @@ def iteration_simulator(total_epoch, special_epoch_count, restricted_vocab_name)
 
 
 def stool_simulator(total_epoch, special_epoch_count, restricted_vocab_name):
-    corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
-    # corpus_file = 'input/enwiki-1G.txt'
+    # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
+    corpus_file = 'input/enwiki-1G.txt'
     xlsx_path = 'output/test1G-vocab50000-stool-iter' + str(total_epoch) + '-first' + str(special_epoch_count) \
                 + 'EpochFinal-' + str(restricted_vocab_name) + '.xlsx'
     df = pd.DataFrame(columns=[
