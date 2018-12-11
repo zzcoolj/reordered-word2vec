@@ -45,7 +45,7 @@ def alpha_splitter(start, epochs, end=0.0001):
     return alphas
 
 
-def iteration_simulater(total_epoch, special_epoch_count, restricted_vocab_name):
+def iteration_simulator(total_epoch, special_epoch_count, restricted_vocab_name):
     # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
     corpus_file = 'input/enwiki-1G.txt'
     xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '-last' + str(special_epoch_count) \
@@ -157,6 +157,76 @@ def iteration_simulater(total_epoch, special_epoch_count, restricted_vocab_name)
     writer.save()
 
 
+def stool_simulator(total_epoch, special_epoch_count, restricted_vocab_name):
+    corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
+    # corpus_file = 'input/enwiki-1G.txt'
+    xlsx_path = 'output/test1G-vocab50000-stool-iter' + str(total_epoch) + '-first' + str(special_epoch_count) \
+                + 'EpochFinal-' + str(restricted_vocab_name) + '.xlsx'
+    df = pd.DataFrame(columns=[
+        # word embeddings file name
+        'file name',
+        # wordsim353
+        'wordsim353_Pearson correlation', 'Pearson pvalue',
+        'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+        # simlex999
+        'simlex999_Pearson correlation', 'Pearson pvalue',
+        'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+        # MTURK-771
+        'MTURK771_Pearson correlation', 'Pearson pvalue',
+        'Spearman correlation', 'Spearman pvalue', 'Ration of pairs with OOV',
+        # questions-words
+        'sem_acc', '#sem', 'syn_acc', '#syn', 'total_acc', '#total'
+    ])
+    line_number_in_xlsx = 0
+    lr = 0.025
+    alphas = alpha_splitter(start=lr, epochs=total_epoch)
+    print('alphas', alphas)
+
+    # special starting epochs (final notIn)
+    restricted_vocab = read_file_to_dict('../word_embeddings_evaluator/data/distinct-tokens/' +
+                                         str(restricted_vocab_name) + '.txt')
+    restricted_type = 2
+    params = {
+        'alpha': lr,
+        'min_alpha': alphas[special_epoch_count],
+        'size': 200,
+        'window': 5,
+        'iter': special_epoch_count,
+        'max_vocab_size': 50000,
+        'sample': 1e-4,
+        'sg': 1,  # 1 for skip-gram
+        'hs': 0,  # If 0, and negative is non-zero, negative sampling will be used.
+        'negative': 5,
+        'workers': 3,
+
+        'restricted_vocab': restricted_vocab,  # [modified] ATTENTION: It must be a dictionary not a list!
+        'restricted_type': restricted_type  # [modified] 0: train_batch_sg_original; 1: train_batch_sg_in; 2: train_batch_sg_notIn
+    }
+    print('special epochs half', special_epoch_count)
+    gs_model = Word2Vec(LineSentence(corpus_file), **params)
+    df.loc[line_number_in_xlsx] = evaluate(gs_model.wv, 'epoch' + str(special_epoch_count) + '-half')
+
+    # special starting epochs (final in)
+    print('special epochs entire', special_epoch_count)
+    gs_model.restricted_type = 1
+    gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
+                   start_alpha=lr, end_alpha=alphas[special_epoch_count])
+    line_number_in_xlsx += 1
+    df.loc[line_number_in_xlsx] = evaluate(gs_model.wv, 'epoch' + str(special_epoch_count) + '-entire')
+
+    # original ending epochs
+    print('roof epochs')
+    gs_model.restricted_type = 0
+    gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=total_epoch-special_epoch_count,
+                   start_alpha=alphas[special_epoch_count], end_alpha=alphas[-1])
+    line_number_in_xlsx += 1
+    df.loc[line_number_in_xlsx] = evaluate(gs_model.wv, 'epoch' + str(total_epoch))
+
+    writer = pd.ExcelWriter(xlsx_path)
+    df.to_excel(writer, 'Sheet1')
+    writer.save()
+
+
 """ Local test """
 # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
 # Word2Vec(LineSentence(corpus_file), **params)
@@ -215,48 +285,3 @@ def iteration_simulater(total_epoch, special_epoch_count, restricted_vocab_name)
 # writer = pd.ExcelWriter(xlsx_path)
 # df.to_excel(writer, 'Sheet1')
 # writer.save()
-
-
-""" Entire Training """
-# corpus_file = 'input/enwiki-1G.txt'
-# output_path = 'output/test1G-vocab50000-no999-999-entire-alphaControl'
-# print(output_path)
-# gs_model = Word2Vec(LineSentence(corpus_file), **params)
-# gs_model.restricted_type = 1
-# print(gs_model.min_alpha_yet_reached)
-# gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter, start_alpha=gs_model.min_alpha_yet_reached)
-# print(evaluate(gs_model.wv))
-#
-# gs_model.restricted_type = 2
-# print(gs_model.min_alpha_yet_reached)
-# gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter, start_alpha=gs_model.min_alpha_yet_reached)
-# gs_model.restricted_type = 1
-# print(gs_model.min_alpha_yet_reached)
-# gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter, start_alpha=gs_model.min_alpha_yet_reached)
-# print(evaluate(gs_model.wv))
-#
-# gs_model.restricted_type = 2
-# print(gs_model.min_alpha_yet_reached)
-# gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter, start_alpha=gs_model.min_alpha_yet_reached)
-# gs_model.restricted_type = 1
-# print(gs_model.min_alpha_yet_reached)
-# gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter, start_alpha=gs_model.min_alpha_yet_reached)
-# print(evaluate(gs_model.wv))
-#
-# gs_model.restricted_type = 2
-# print(gs_model.min_alpha_yet_reached)
-# gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter, start_alpha=gs_model.min_alpha_yet_reached)
-# gs_model.restricted_type = 1
-# print(gs_model.min_alpha_yet_reached)
-# gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter, start_alpha=gs_model.min_alpha_yet_reached)
-# print(evaluate(gs_model.wv))
-#
-# gs_model.restricted_type = 2
-# print(gs_model.min_alpha_yet_reached)
-# gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter, start_alpha=gs_model.min_alpha_yet_reached)
-# gs_model.restricted_type = 1
-# print(gs_model.min_alpha_yet_reached)
-# gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter, start_alpha=gs_model.min_alpha_yet_reached)
-# print(evaluate(gs_model.wv))
-#
-# gs_model.save(output_path)
