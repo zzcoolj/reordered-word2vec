@@ -49,7 +49,7 @@ def iteration_simulator(total_epoch, special_epoch_count, restricted_vocab_name,
     # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
     corpus_file = 'input/enwiki-1G.txt'
     xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '-last' + str(special_epoch_count) \
-                + 'EpochInitial-' + str(restricted_vocab_name) + '-special'+''.join(str(x) for x in jumps)+'.xlsx'
+                + 'EpochInitial-' + str(restricted_vocab_name) + '-jump'+''.join(str(x) for x in jumps)+'.xlsx'
     df = pd.DataFrame(columns=[
         # word embeddings file name
         'file name',
@@ -132,7 +132,7 @@ def iteration_simulator(total_epoch, special_epoch_count, restricted_vocab_name,
         df.loc[line_number_in_xlsx] = evaluate(gs_model.wv, 'epoch'+str(special_epoch)+'-half')
 
         # final special epochs final
-        if special_epoch in jumps:
+        if special_epoch not in jumps:
             gs_model.restricted_type = 2
             gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
                            start_alpha=start_alpha, end_alpha=end_alpha)
