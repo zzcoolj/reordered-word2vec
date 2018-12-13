@@ -49,7 +49,7 @@ def iteration_simulator(total_epoch, special_epoch_count, restricted_vocab_name,
     # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
     corpus_file = 'input/enwiki-1G.txt'
     xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '-last' + str(special_epoch_count) \
-                + 'EpochInitial-' + str(restricted_vocab_name) + '.xlsx'
+                + 'EpochInitial-' + str(restricted_vocab_name) + '-special'+str(jumps)+'.xlsx'
     df = pd.DataFrame(columns=[
         # word embeddings file name
         'file name',
