@@ -45,7 +45,7 @@ def alpha_splitter(start, epochs, end=0.0001):
     return alphas
 
 
-def iteration_simulator(total_epoch, special_epoch_count, restricted_vocab_name):
+def iteration_simulator(total_epoch, special_epoch_count, restricted_vocab_name, jumps):
     # corpus_file = '/Users/zzcoolj/Code/GoW/data/training data/Wikipedia-Dumps_en_20170420_prep/AA/wiki_01.txt'
     corpus_file = 'input/enwiki-1G.txt'
     xlsx_path = 'output/test1G-vocab50000-original-iter' + str(total_epoch) + '-last' + str(special_epoch_count) \
@@ -115,8 +115,8 @@ def iteration_simulator(total_epoch, special_epoch_count, restricted_vocab_name)
         line_number_in_xlsx += 1
         df.loc[line_number_in_xlsx] = evaluate(gs_model.wv, 'epoch'+str(cur_epoch))
 
-    # save common base model
-    write_to_pickle(gs_model, xlsx_path.split('.xlsx')[0]+'-base')
+    # # save common base model
+    # write_to_pickle(gs_model, xlsx_path.split('.xlsx')[0]+'-base')
 
     for special_epoch in range(total_epoch-special_epoch_count, total_epoch):
         print('special epoch', special_epoch)
@@ -132,25 +132,26 @@ def iteration_simulator(total_epoch, special_epoch_count, restricted_vocab_name)
         df.loc[line_number_in_xlsx] = evaluate(gs_model.wv, 'epoch'+str(special_epoch)+'-half')
 
         # final special epochs final
-        gs_model.restricted_type = 2
-        gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
-                       start_alpha=start_alpha, end_alpha=end_alpha)
-        line_number_in_xlsx += 1
-        df.loc[line_number_in_xlsx] = evaluate(gs_model.wv, 'epoch' + str(special_epoch)+'-entire')
+        if special_epoch in jumps:
+            gs_model.restricted_type = 2
+            gs_model.train(LineSentence(corpus_file), total_examples=gs_model.corpus_count, epochs=gs_model.iter,
+                           start_alpha=start_alpha, end_alpha=end_alpha)
+            line_number_in_xlsx += 1
+            df.loc[line_number_in_xlsx] = evaluate(gs_model.wv, 'epoch' + str(special_epoch)+'-entire')
 
-    # baseline (final original word2vec epochs)
-    gs_model_base = read_pickle(xlsx_path.split('.xlsx')[0] + '-base')
-    gs_model_base.restricted_type = 0
-    for baseline_epoch in range(total_epoch - special_epoch_count, total_epoch):
-        print('baseline epoch', baseline_epoch)
-        start_alpha = alphas[baseline_epoch]
-        end_alpha = alphas[baseline_epoch + 1]
-        print('start_alpha', start_alpha)
-        print('end_alpha', end_alpha)
-        gs_model_base.train(LineSentence(corpus_file), total_examples=gs_model_base.corpus_count, epochs=gs_model_base.iter,
-                            start_alpha=start_alpha, end_alpha=end_alpha)
-        line_number_in_xlsx += 1
-        df.loc[line_number_in_xlsx] = evaluate(gs_model_base.wv, 'epoch' + str(baseline_epoch)+'-baseline')
+    # # baseline (final original word2vec epochs)
+    # gs_model_base = read_pickle(xlsx_path.split('.xlsx')[0] + '-base')
+    # gs_model_base.restricted_type = 0
+    # for baseline_epoch in range(total_epoch - special_epoch_count, total_epoch):
+    #     print('baseline epoch', baseline_epoch)
+    #     start_alpha = alphas[baseline_epoch]
+    #     end_alpha = alphas[baseline_epoch + 1]
+    #     print('start_alpha', start_alpha)
+    #     print('end_alpha', end_alpha)
+    #     gs_model_base.train(LineSentence(corpus_file), total_examples=gs_model_base.corpus_count, epochs=gs_model_base.iter,
+    #                         start_alpha=start_alpha, end_alpha=end_alpha)
+    #     line_number_in_xlsx += 1
+    #     df.loc[line_number_in_xlsx] = evaluate(gs_model_base.wv, 'epoch' + str(baseline_epoch)+'-baseline')
 
     writer = pd.ExcelWriter(xlsx_path)
     df.to_excel(writer, 'Sheet1')
