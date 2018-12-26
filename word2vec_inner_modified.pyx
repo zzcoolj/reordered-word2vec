@@ -87,8 +87,8 @@ cdef inline unsigned long long random_int32(unsigned long long *next_random) nog
 
 cdef unsigned long long fast_sentence_sg_neg(
     const int negative, np.uint32_t *cum_table, unsigned long long cum_table_len,
-    REAL_t *syn0, REAL_t *syn1neg, const int size, const np.uint32_t word_index,
-    const np.uint32_t word2_index, const REAL_t alpha, REAL_t *work,
+    REAL_t *syn0, REAL_t *syn1neg, const int size, const np.uint32_t word2_index,
+    const np.uint32_t word_index, const REAL_t alpha, REAL_t *work,
     unsigned long long next_random, REAL_t *word_locks,
     const int _compute_loss, REAL_t *_running_training_loss_param) nogil:
     # TODO ATTENTION: word_index and word2_index have been switched.
