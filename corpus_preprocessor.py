@@ -240,7 +240,7 @@ def stool_simulator(total_epoch, special_epoch_count, restricted_vocab_name):
 
 """ Normal word embeddings training """
 corpus_file = 'input/enwiki-1G.txt'
-xlsx_path = 'output/real-sg.xlsx'
+xlsx_path = 'output/original-sg.xlsx'
 
 df = pd.DataFrame(columns=[
     # word embeddings file name
